@@ -1,0 +1,18 @@
+# Sprint 1
+
+Rough Sprint Plan:
+
+- Sprint 1: Planning (diagramming, outlining, SRS) and rough HTML.
+- Sprint 2: Start Linode and domain, fully create homepage design (HTML+CSS), start planning database (account management).
+- Sprint 3: Start setting up chats and do accounts (log in + profile).
+- Sprint 4: Continue working on chats and integrate chat organization, add friends.
+- Sprint 5: Finish everything and add any extra features.
+
+Requirements:
+
+- Simple and minimalistic
+- Live/Active chatting
+- Organize chats
+- Single and group chats
+- Accounts
+- Friends
