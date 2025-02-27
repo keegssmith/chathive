@@ -1,17 +1,18 @@
 html, body {
     margin: 0;
     padding: 0;
+    background-color: #EDE9DF;
 }
 
 #main-header {
     position: fixed;
     width: 100%;
     margin: 0;
-    background-color: rgb(255, 246, 195);
+    background-color: #D8AE47;
     z-index: 2;
 
-    font-family: 'Courier New', Courier, monospace;
-    color:rgb(0, 0, 0);
+    font-family: 'Oswald';
+    color:  #131F29;
     font-size: 10px;
     line-height: 2.5;
     padding-left: 10px;
@@ -19,8 +20,10 @@ html, body {
 
 #menu-button {
     position: fixed;
-    top: 0;
-    right: 0;
+    height: 50px;
+    top: 35px;
+    right: 50px;
+    
     z-index: 3;
 
     background: none;
@@ -37,8 +40,15 @@ html, body {
     width: 25%;
     height: 100%;
     margin: 0;
-    background-color: rgb(252, 249, 206);
+    background-color: #131F29;
     z-index: 1;
+}
+#chat-hive-logo {
+   top: 0;
+   height: 150px;
+
+   
+    
 }
 
 #chat-screen {
