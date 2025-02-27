@@ -2,17 +2,22 @@
 
 Rough Sprint Plan:
 
-- Sprint 1: Planning (diagramming, outlining, SRS) and rough HTML.
-- Sprint 2: Start Linode and domain, fully create homepage design (HTML+CSS), start planning database (account management).
+- Sprint 1: Planning (diagramming, outlining, SRS) and rough HTML. Start Linode and domain.
+- Sprint 2: Fully create homepage design (HTML+CSS), start planning database (account management).
 - Sprint 3: Start setting up chats and do accounts (log in + profile).
 - Sprint 4: Continue working on chats and integrate chat organization, add friends.
 - Sprint 5: Finish everything and add any extra features.
 
 Requirements:
 
-- Simple and minimalistic
-- Live/Active chatting
-- Organize chats
-- Single and group chats
-- Accounts
-- Friends
+- Functional Requirements:
+    - User can create and edit their account.
+    - User can have add other accounts to have a friends list.
+    - User must be able to send and receive chat messages.
+    - User can select chats to put into folders.
+    - User can customize and edit folders (color + name).
+    - User can create a chat with a person or a group chat with multiple people.
+- Non-Functional Requirements:
+    - Interface is simple and minimalistic.
+    - Web server secures traffic using SSL and a valid certificate.
+    - User accounts are properly secured with authentication and password hashing.
