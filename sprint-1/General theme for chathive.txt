@@ -1,0 +1,18 @@
+Colors for ChatHive:
+
+Yellow Background : #D8AE47
+
+Black Background : #131F29
+
+Grey subcolor = #6C7273
+
+White color: #EDE9DF
+
+Darker golden : #9f853f
+
+red if we want: #7B2D26
+
+General Theme:
+Honeycombs - hives for bees.
+Pentagons
+Yellow, Black
