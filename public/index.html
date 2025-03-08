@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chathive</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- Header -->
+    <header id="main-header">
+        <img src="chat-hive-logo1.png" alt="Chat Hive Logo" id="chat-hive-logo">
+    </header>
+
+    <!-- Menu -->
+    <button id="menu-button">
+        <img src="hive-menu.png" alt="Menu">
+    </button>
+
+    <!-- Chat Menu -->
+    <div id="chat-menu"></div>
+
+    <!-- Main Chat Screen -->
+    <div id="main-chat"></div>
+
+    <!-- Login Button -->
+    <button id="login-button" onclick="redirectToAuth()">Login</button>
+
+    <!-- Redirect to auth.html -->
+    <script>
+        function redirectToAuth() {
+            window.location.href = "auth.html";
+        }
+    </script>
+    <script type="module" src="./app.js"></script>
+</body>
+</html>

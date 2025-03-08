@@ -1,0 +1,70 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #EDE9DF;
+}
+
+#main-header {
+    position: fixed;
+    width: 100%;
+    margin: 0;
+    background-color: #D8AE47;
+    z-index: 2;
+
+    font-family: 'Oswald';
+    color:  #131F29;
+    font-size: 10px;
+    line-height: 2.5;
+    padding-left: 10px;
+}
+
+#menu-button {
+    position: fixed;
+    height: 50px;
+    top: 35px;
+    right: 50px;
+    
+    z-index: 3;
+
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+#menu-button img {
+    height: 70px;
+    width: auto;
+}
+
+#chat-menu {
+    position: fixed;
+    width: 25%;
+    height: 100%;
+    margin: 0;
+    background-color: #131F29;
+    z-index: 1;
+}
+#chat-hive-logo {
+   top: 0;
+   height: 150px;    
+}
+
+#login-button {
+    position: fixed;
+    top: 35px;
+    right: 150px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: 'Oswald', sans-serif;
+    color: #131F29;
+    background-color: #D8AE47;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    z-index: 4; 
+}
+
+#login-button:hover {
+    background-color: #B88C36;
+    transform: scale(1.05);
+}
