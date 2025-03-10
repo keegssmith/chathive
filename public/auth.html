@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth - ChatHive</title>
+    <script type="module" src="./app.js"></script>
+    <script type="module" src="./auth.js"></script>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <h2>Register</h2>
+    <form id="register-form">
+        <input type="email" id="register-email" placeholder="Email" required>
+        <input type="password" id="register-password" placeholder="Password" required>
+        <button type="submit">Register</button>
+    </form>
+
+    <button id="logout-button">Logout</button>
+
+    <script type="module">
+        import { loginUser, registerUser, logoutUser } from "./auth.js";
+
+        document.getElementById("login-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            loginUser(email, password);
+        });
+
+        document.getElementById("register-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            registerUser(email, password);
+        });
+
+        document.getElementById("logout-button").addEventListener("click", () => {
+            logoutUser();
+        });
+    </script>
+</body>
+</html>
