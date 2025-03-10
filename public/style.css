@@ -38,6 +38,27 @@ html, body {
     width: auto;
 }
 
+#login-button {
+  position: fixed;
+  top: 58px;
+  right: 150px;
+  padding: 10px 20px;
+  font-size: 20px;
+  font-family: 'Oswald', sans-serif;
+  color: #131F29;
+  background-color: #D8AE47;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  z-index: 4; 
+}
+
+#login-button:hover {
+  background-color: #B88C36;
+  transform: scale(1.05);
+}
+
 #chat-menu {
     position: fixed;
     width: 25%;
