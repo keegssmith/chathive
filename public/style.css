@@ -97,7 +97,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12vh; 
+  margin-bottom: 20vh; 
   width: fit-content;
  
 }
@@ -114,7 +114,7 @@ html, body {
   cursor: pointer;
 }
 
-.hex-container:hover {
+.button-hive:hover {
   content: url('selected-button.png');
   transform: scale(1.10);
   
