@@ -116,7 +116,7 @@ html, body {
 
 .button-hive:hover {
   content: url('selected-button.png');
-  transform: scale(1.10);
+  
   
 }
 
