@@ -1,49 +1,63 @@
+/* Apply a universal box-sizing rule */
+* {
+  box-sizing: border-box;
+}
+
+/* Global styles */
 html, body {
-    margin: 0;
-    padding: 0;
-    background-color: #EDE9DF;
+  margin: 0;
+  padding: 0;
+  background-color: #EDE9DF;
+  font-size: 16px; 
 }
 
+/* Main header */
 #main-header {
-    position: fixed;
-    width: 100%;
-    margin: 0;
-    background-color: #D8AE47;
-    z-index: 2;
- 
-
-    font-family: 'Oswald';
-    color:  #131F29;
-    font-size: 10px;
-    line-height: 2.5;
-    padding-left: 10px;
-    border-radius: 0 0 25px 35px; 
+  position: fixed;
+  width: 100%;
+  height: 15vh;
+  background-color: #D8AE47;
+  z-index: 2;
+  font-family: 'Oswald', sans-serif;
+  color: #131F29;
+  font-size: 1.5rem; 
+  line-height: 2.5;
+  padding-left: 2%;
+  border-radius: 0 0 5% 5%;
+}
+#chat-hive-logo {
+  height: 15vh;
 }
 
+/* Menu button */
 #menu-button {
-    position: fixed;
-    height: 80px; /* Increase the height */
-    width: 80px;  /* Increase the width if needed */
-    top: 30px;
-    right: 80px;
-    
-    z-index: 3;
-    background: none;
-    border: none;
-    cursor: pointer;
+  position: fixed;
+  height: 7vh;
+  width: 7vh;
+  top: 2vh;
+  right: 4vw;
+  z-index: 3;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 #menu-button img {
-    height: 100px; /* Increase the image size */
-    width: auto;
+  width: 160%;
+  height: auto;
 }
 
+#menu-button:hover{
+  transform: scale(1.05);
+}
+
+/* Login button */
 #login-button {
   position: fixed;
-  top: 58px;
-  right: 150px;
-  padding: 10px 20px;
-  font-size: 20px;
+  top: 5vh;
+  right: 10vw;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.2rem;
   font-family: 'Oswald', sans-serif;
   color: #131F29;
   background-color: #D8AE47;
@@ -51,7 +65,7 @@ html, body {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
-  z-index: 4; 
+  z-index: 4;
 }
 
 #login-button:hover {
@@ -59,57 +73,60 @@ html, body {
   transform: scale(1.05);
 }
 
+
+/* Chat menu */
 #chat-menu {
-    position: fixed;
-    width: 25%;
-    height: 100%;
-    margin: 0;
-    background-color: #131F29;
-    z-index: 1;
-
-    background-image: url('hexagon-pattern.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 0 0 20px 0; 
-    
+  position: fixed;
+  width: 25%;
+  height: 100%;
+  background-color: #131F29;
+  z-index: 1;
+  background-image: url('hexagon-pattern.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 0 0 10% 0;
+  padding-top: 8vh; 
 }
-#chat-hive-logo {
-   top: 0;
-   height: 150px;
 
-   
-    
-}
+/* HIve Button*/
 .hex-container {
-    
-    display: flex;
-    justify-content: center; /* Centers horizontally */
-    align-items: right; /* Centers vertically */
-    background: transparent; /* Ensure no unwanted backgrounds */
-    
-  }
-  
-  .button-hive{
-    margin-top: 130px;
-    margin-left: 160px;
-    width: 70%;
-    height: auto;
-  }
-  
-  #hex-button:hover {
-    content: url('selected-button.png'); /* Change image on click */
+  position: relative; 
+  display: flex;
+  left: 12vw; 
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20vh; 
+ 
 }
-  .hive-text {
-    position: absolute;
-    margin-top: 280px;
-    margin-left: 320px;
-    transform: translate(-50%, -50%);
-    color: #131F29; /* Adjust color to fit */
-    font-size: 50px;
-    font-weight: bold;
-    text-align: center;
-    white-space: nowrap; /* Prevent text from wrapping */
-  }
-  
 
+
+.button-hive {
+  position: absolute;
+  top: 7.5vh;
+  height: 18vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
+  cursor: pointer;
+}
+
+.button-hive:hover {
+  content: url('selected-button.png');
+  transform: scale(1.10);
+  
+}
+
+
+/* Hive text */
+.hive-text {
+  position: absolute;
+  left: 50%; 
+  transform: translate(-50%, -100%); 
+  font-size: 2rem;
+  font-weight: bold;
+  color: #131F29; 
+  pointer-events: none; 
+}
