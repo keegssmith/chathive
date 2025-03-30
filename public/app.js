@@ -1,10 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCZc8mRCRKckk5VVZpsgVq_ptcIrfQwvNg",
   authDomain: "chat-hive6.firebaseapp.com",
@@ -17,5 +15,30 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Function to load user-specific data
+const loadUserData = async (userId) => {
+    const userDoc = await getDoc(doc(db, "users", userId));
+    if (userDoc.exists()) {
+        return userDoc.data();
+    } else {
+        return null;
+    }
+};
+
+// Listen for authentication state changes
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        console.log("User logged in:", user.email);
+        const userData = await loadUserData(user.uid);
+        
+        if (userData) {
+            document.getElementById("chat-menu").innerHTML = userData.chatMenu || "";
+            document.getElementById("chat-container").innerHTML = userData.chatContainer || "";
+        }
+    } else {
+        console.log("No user is logged in.");
+    }
+});

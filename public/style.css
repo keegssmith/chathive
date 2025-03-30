@@ -1,42 +1,89 @@
-/* Apply a universal box-sizing rule */
 * {
   box-sizing: border-box;
 }
 
-/* Global styles */
 html, body {
   margin: 0;
   padding: 0;
   background-color: #EDE9DF;
-  font-size: 16px; 
+  font-size: 16px;
+  overflow: hidden;
 }
 
-/* Main header */
 #main-header {
   position: fixed;
   width: 100%;
   height: 15vh;
   background-color: #D8AE47;
-  z-index: 2;
+  z-index: 3;
   font-family: 'Oswald', sans-serif;
   color: #131F29;
-  font-size: 1.5rem; 
+  font-size: 1.5rem;
   line-height: 2.5;
   padding-left: 2%;
-  border-radius: 0 0 5% 5%;
+  border-radius: 0 0 5% 0;
 }
+
 #chat-hive-logo {
   height: 15vh;
 }
 
-/* Menu button */
-#menu-button {
+#chat-menu {
   position: fixed;
-  height: 7vh;
-  width: 7vh;
+  top: 15vh;
+  left: 0;
+  width: 20%;
+  height: 85vh;
+  background-color: #131F29;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hex-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.button-hive {
+  width: 10vw;
+  max-width: 120px;
+  height: auto;
+}
+
+.hive-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #EDE9DF;
+  pointer-events: none;
+}
+
+.chat-container {
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.menu-container {
+  position: fixed;
   top: 2vh;
   right: 4vw;
-  z-index: 3;
+  z-index: 5;
+}
+
+#menu-button {
+  height: 7vh;
+  width: 7vh;
   background: none;
   border: none;
   cursor: pointer;
@@ -47,87 +94,48 @@ html, body {
   height: auto;
 }
 
-#menu-button:hover{
+#menu-button:hover {
   transform: scale(1.05);
 }
 
-/* Login button */
-#login-button {
-  position: fixed;
-  top: 5vh;
-  right: 10vw;
-  padding: 0.8rem 1.5rem;
-  font-size: 1.2rem;
-  font-family: 'Oswald', sans-serif;
-  color: #131F29;
-  background-color: #D8AE47;
-  border: none;
+#menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 8vh;
+  background: white;
   border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  z-index: 4;
-}
-
-#login-button:hover {
-  background-color: #B88C36;
-  transform: scale(1.05);
-}
-
-
-/* Chat menu */
-#chat-menu {
-  position: fixed;
-  width: 25%;
-  height: 100%;
-  background-color: #131F29;
-  z-index: 1;
-  background-image: url('hexagon-pattern.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 0 0 10% 0;
-  padding-top: 8vh; 
-}
-
-/* HIve Button*/
-.hex-container {
-  position: relative; 
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
-  left: 12vw; 
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 25vh; 
-  width: fit-content;
- 
+  min-width: 150px;
+  padding: 5px 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
+#menu-dropdown:not(.hidden) {
+  visibility: visible;
+  opacity: 1;
+}
 
-.button-hive {
-  position: absolute;
-  top: 7.5vh;
-  height: 18vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: auto;
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.dropdown-item {
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 1rem;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
-.button-hive:hover {
-  content: url('selected-button.png');
-  
-  
-}
-
-
-/* Hive text */
-.hive-text {
-  position: absolute;
-  left: 50%; 
-  transform: translate(-50%, -100%); 
-  font-size: 2rem;
-  font-weight: bold;
-  color: #131F29; 
-  pointer-events: none; 
+.dropdown-item:hover {
+  background: #D8AE47;
+  color: #fff;
 }
