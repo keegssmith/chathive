@@ -23,8 +23,6 @@
         <button type="submit">Register</button>
     </form>
 
-    <button id="logout-button">Logout</button>
-
     <script type="module">
         import { loginUser, registerUser, logoutUser } from "./auth.js";
 
@@ -40,10 +38,6 @@
             const email = document.getElementById("register-email").value;
             const password = document.getElementById("register-password").value;
             registerUser(email, password);
-        });
-
-        document.getElementById("logout-button").addEventListener("click", () => {
-            logoutUser();
         });
     </script>
 </body>

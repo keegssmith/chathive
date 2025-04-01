@@ -55,13 +55,6 @@ button:hover {
     background-color: #131F29;
 }
 
-/* Logout Button */
-#logout-button {
-    display: block;
-    margin: 20px auto;
-    width: 200px;
-}
-
 /* Responsive Design */
 @media (max-width: 600px) {
     form {

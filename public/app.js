@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -40,5 +40,13 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else {
         console.log("No user is logged in.");
+        // Redirect unauthenticated users away from index.html
+        const pathname = window.location.pathname;
+        if (pathname.endsWith("index.html") || pathname === "/") {
+            window.location.href = "auth.html";
+        }
     }
 });
+
+// Export the auth instance for other modules to use
+export { auth };

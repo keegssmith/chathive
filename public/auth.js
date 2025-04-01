@@ -1,6 +1,5 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
-const auth = getAuth();
+import { auth } from "./app.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 // Register a new user
 export const registerUser = (email, password) => {
@@ -21,7 +20,7 @@ export const loginUser = (email, password) => {
         .then((userCredential) => {
             console.log("User logged in:", userCredential.user);
             alert("Login successful!");
-            window.location.href = "index.html"; // Redirect to chat page
+            window.location.href = "index.html";
         })
         .catch((error) => {
             console.error("Error logging in:", error.message);

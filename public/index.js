@@ -1,5 +1,7 @@
-document.addEventListener("DOMContentLoaded", function () {
+import { auth } from "./app.js";
+import * as firebaseAuth from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
+document.addEventListener("DOMContentLoaded", function () {
     // Get all the hive buttons
     const hexButtons = document.querySelectorAll('.hex-container');
 
@@ -36,13 +38,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Add the logout functionality
+    // Logout button event listener
     document.getElementById("logout-button").addEventListener("click", function () {
-        redirectToAuth();
+        firebaseAuth.signOut(auth)
+            .then(() => {
+                console.log("User signed out");
+                alert("Logged out successfully!");
+            })
+            .catch((error) => {
+                console.error("Error signing out:", error.message);
+                alert(error.message);
+            });
     });
-
-    // Define redirectToAuth() function
-    function redirectToAuth() {
-        window.location.href = "auth.html";
-    }
 });
