@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             menuDropdown.classList.add("hidden");
         }
     });
+    
 
     // Logout button event listener
     document.getElementById("logout-button").addEventListener("click", function () {

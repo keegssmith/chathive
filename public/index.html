@@ -1,44 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatHive</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatHive</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- Header -->
-    <header id="main-header">
-        <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo">
-    </header>
+  <!-- Header -->
+  <header id="main-header">
+    <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo" />
+  </header>
 
-    <!-- Menu Button -->
-    <div class="menu-container">
-        <button id="menu-button">
-            <img src="hive-menu.png" alt="Menu">
-        </button>
+  <!-- Menu Button -->
+  <div class="menu-container">
+    <button id="menu-button">
+      <img src="hive-menu.png" alt="Menu" />
+    </button>
 
-        <!-- Dropdown Menu -->
-        <div id="menu-dropdown" class="hidden">
-            <button class="dropdown-item">Friends</button>
-            <button class="dropdown-item" id="logout-button">Logout</button>
-        </div>
+    <!-- Dropdown Menu -->
+    <div id="menu-dropdown" class="hidden">
+        <button class="dropdown-item" id="friends-button" onclick="location.href='friends.html'">Friends</button>
+      <button class="dropdown-item" id="logout-button">Logout</button>
     </div>
+  </div>
 
+  <!-- Main Layout Container -->
+  <main id="main-layout">
     <!-- Chat Menu -->
     <div id="chat-menu">
-        <button class="hex-container">
-            <img src="unselected-button.png" alt="Hive Button" class="button-hive">
-            <span class="hive-text">Unhived</span>
-        </button>
+      <button class="hex-container">
+        <img src="unselected-button.png" alt="Hive Button" class="button-hive" />
+        <span class="hive-text">Unhived</span>
+      </button>
     </div>
 
     <!-- Main Chat Screen -->
-    <div class="chat-container"></div>
+    <div class="chat-container">
+      <div id="chat-history" class="chat-history">
+        <!-- Messages will appear here -->
+      </div>
+      <div id="chat-input">
+        <textarea id="message" placeholder="Type a message..."></textarea>
+        <button id="send-message">Send</button>
+      </div>
+    </div>
+  </main>
 
-    <script type="module" src="./app.js"></script>
-    <script type="module" src="index.js"></script>
-
+  <script type="module" src="./app.js"></script>
+  <script type="module" src="index.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

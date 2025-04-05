@@ -1,3 +1,4 @@
+/* General Reset */
 * {
   box-sizing: border-box;
 }
@@ -7,9 +8,11 @@ html, body {
   padding: 0;
   background-color: #EDE9DF;
   font-size: 16px;
+  height: 100vh;
   overflow: hidden;
 }
 
+/* Header */
 #main-header {
   position: fixed;
   width: 100%;
@@ -28,18 +31,29 @@ html, body {
   height: 15vh;
 }
 
-#chat-menu {
-  position: fixed;
+/* Layout Container */
+#main-layout {
+  position: absolute;
   top: 15vh;
   left: 0;
-  width: 20%;
+  width: 100%;
   height: 85vh;
-  background-color: #131F29;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: row;
 }
 
+/* Sidebar */
+#chat-menu {
+  width: 20%;
+  height: 100%;
+  background-color: #131F29;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+/* Hex Button */
 .hex-container {
   position: relative;
   display: flex;
@@ -63,17 +77,74 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #EDE9DF;
   pointer-events: none;
 }
 
+/* Chat Container */
 .chat-container {
-  overflow: hidden;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 10px;
+  background-color: #EDE9DF;
+  height: 100%;
+  overflow: hidden;
 }
 
+.chat-history {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
+  max-height: 100%;
+}
+
+.message {
+  padding: 10px;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  margin: 5px 0;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+/* Chat Input */
+#chat-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #6C7273;
+}
+
+#message {
+  width: 80%;
+  height: 40px;
+  border-radius: 20px;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #6C7273;
+  resize: none;
+}
+
+#send-message {
+  width: 15%;
+  padding: 10px;
+  background-color: #D8AE47;
+  border: none;
+  border-radius: 5px;
+  color: #EDE9DF;
+  cursor: pointer;
+}
+
+#send-message:hover {
+  background-color: #9f853f;
+}
+
+/* Menu Button */
 .menu-container {
   position: fixed;
   top: 2vh;
@@ -98,11 +169,12 @@ html, body {
   transform: scale(1.05);
 }
 
+/* Dropdown Menu */
 #menu-dropdown {
   position: absolute;
   right: 0;
   top: 8vh;
-  background: white;
+  background: #EDE9DF;
   border-radius: 8px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
@@ -133,9 +205,91 @@ html, body {
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.3s;
+  color: #131F29;
 }
 
 .dropdown-item:hover {
   background: #D8AE47;
-  color: #fff;
+  color: #EDE9DF;
+}
+
+/* Friends Page */
+#friends-page {
+  display: block;
+  padding: 20px;
+}
+
+.friends-container {
+  position: absolute;
+  top: 15vh;
+  left: 0;
+  width: 100%;
+  height: 85vh;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #EDE9DF;
+}
+
+#friends-page h2 {
+  margin-top: 0;
+  font-size: 2rem;
+  color: #131F29;
+}
+
+#friends-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+#friends-list li {
+  padding: 10px 15px;
+  background-color: #D8AE47;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #131F29;
+  font-size: 1.1rem;
+}
+
+#add-friend-form {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+#add-friend-form input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #6C7273;
+  font-size: 1rem;
+}
+
+#add-friend-form button {
+  padding: 10px 15px;
+  background-color: #D8AE47;
+  color: #EDE9DF;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#add-friend-form button:hover {
+  background-color: #9f853f;
+}
+
+.remove-btn {
+  background: #7B2D26;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.remove-btn:hover {
+  background-color: #7B2D26;
 }

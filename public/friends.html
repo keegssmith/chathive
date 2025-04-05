@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Friends - ChatHive</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="main-header">
+    <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo">
+  </header>
+
+  <!-- Back Button -->
+  <div class="menu-container">
+    <button id="menu-button" onclick="location.href='index.html'">
+      <img src="hive-menu.png" alt="Back to Chat">
+    </button>
+  </div>
+
+  <!-- Friends Page Content -->
+  <div id="friends-page" class="friends-container">
+    <h2>Your Hive</h2>
+
+    <!-- Add Friend Form -->
+    <form id="add-friend-form">
+      <input type="text" id="friend-name" placeholder="Enter name..." required />
+      <button type="submit">Add</button>
+    </form>
+
+    <!-- Friends List -->
+    <ul id="friends-list">
+      <li>Example <button class="remove-btn">Remove</button></li>
+     
+    </ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('add-friend-form');
+    const input = document.getElementById('friend-name');
+    const list = document.getElementById('friends-list');
+
+    // Add friend
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = input.value.trim();
+      if (name !== '') {
+        const li = document.createElement('li');
+        li.innerHTML = `${name} <button class="remove-btn">Remove</button>`;
+        list.appendChild(li);
+        input.value = '';
+      }
+    });
+
+    // Remove friend
+    list.addEventListener('click', e => {
+      if (e.target.classList.contains('remove-btn')) {
+        e.target.parentElement.remove();
+      }
+    });
+  </script>
+
+</body>
+</html>
