@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ChatHive</title>
   <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"
+      }
+    }
+    </script>
 </head>
 <body>
 
@@ -21,26 +30,19 @@
 
     <!-- Dropdown Menu -->
     <div id="menu-dropdown" class="hidden">
-        <button class="dropdown-item" id="friends-button" onclick="location.href='friends.html'">Friends</button>
+      <button class="dropdown-item" id="friends-button" onclick="location.href='friends.html'">Friends</button>
       <button class="dropdown-item" id="logout-button">Logout</button>
     </div>
   </div>
 
   <!-- Main Layout Container -->
   <main id="main-layout">
-    <!-- Chat Menu -->
-    <div id="chat-menu">
-      <button class="hex-container">
-        <img src="unselected-button.png" alt="Hive Button" class="button-hive" />
-        <span class="hive-text">Unhived</span>
-      </button>
-    </div>
+    <!-- Chat Menu (Hives will be dynamically inserted here) -->
+    <div id="chat-menu"></div>
 
     <!-- Main Chat Screen -->
-    <div class="chat-container">
-      <div id="chat-history" class="chat-history">
-        <!-- Messages will appear here -->
-      </div>
+    <div class="chat-container" id="chat-container">
+      <div id="chat-history" class="chat-history"></div>
       <div id="chat-input">
         <textarea id="message" placeholder="Type a message..."></textarea>
         <button id="send-message">Send</button>
@@ -49,7 +51,6 @@
   </main>
 
   <script type="module" src="./app.js"></script>
-  <script type="module" src="index.js"></script>
-  <script src="script.js"></script>
+  <script type="module" src="./index.js"></script>
 </body>
 </html>

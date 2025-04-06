@@ -1,5 +1,10 @@
 import { auth } from "./app.js";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut
+} from "firebase/auth";
+
 
 // Register a new user
 export const registerUser = (email, password) => {
@@ -16,6 +21,7 @@ export const registerUser = (email, password) => {
 
 // Login a user
 export const loginUser = (email, password) => {
+    console.log("Attempting login for:", email);
     signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             console.log("User logged in:", userCredential.user);
