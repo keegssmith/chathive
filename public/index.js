@@ -2,37 +2,59 @@ import { auth, db } from "./app.js";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
-// -----------------------------
-// Hive (Folder) Functionality
-// -----------------------------
+let currentUserData = null; // cache for switching between hives and chats
 
-// Default hive object (cannot be deleted)
 const defaultHive = {
   Unhived: { default: true, createdAt: new Date().toISOString() }
 };
 
-// Load user data and ensure a hives field exists
 const loadUserData = async (userId) => {
   const userDocRef = doc(db, "users", userId);
   const userDoc = await getDoc(userDocRef);
+
+  const defaultData = {
+    hives: { Unhived: { default: true, createdAt: new Date().toISOString() } },
+    chats: {},
+    friends: [],
+  };
+
   if (userDoc.exists()) {
     let userData = userDoc.data();
-    if (!userData.hives) {
-      userData.hives = defaultHive;
-      await setDoc(userDocRef, userData);
+
+    // Add missing fields without overwriting existing data
+    let updated = false;
+    for (const key in defaultData) {
+      if (!userData.hasOwnProperty(key)) {
+        userData[key] = defaultData[key];
+        updated = true;
+      }
     }
+
+    if (updated) {
+      await setDoc(userDocRef, userData); // update the doc
+    }
+
     return userData;
   } else {
-    const newData = { hives: defaultHive };
-    await setDoc(userDocRef, newData);
-    return newData;
+    await setDoc(userDocRef, defaultData);
+    return defaultData;
   }
 };
 
-// Render hives in the chat menu
 const renderHives = (hives) => {
   const chatMenu = document.getElementById("chat-menu");
-  chatMenu.innerHTML = ""; // Clear previous content
+  chatMenu.innerHTML = "";
+
+  const topButtons = document.createElement("div");
+  topButtons.className = "chat-menu-top-buttons";
+  topButtons.innerHTML = `
+    <button id="hive-button" class="menu-top-button">Hive</button>
+    <button id="chat-button" class="menu-top-button">Chat</button>
+  `;
+  chatMenu.appendChild(topButtons);
+
+  document.getElementById("hive-button").addEventListener("click", showFriendChatPopup);
+  document.getElementById("chat-button").addEventListener("click", showFriendChatPopup);
 
   for (const hiveName in hives) {
     const hiveContainer = document.createElement("div");
@@ -45,20 +67,23 @@ const renderHives = (hives) => {
       <span class="hive-text">${hiveName}</span>
     `;
 
-    // Hover effect: change image on mouseover/mouseout
     hiveButton.addEventListener("mouseover", () => {
-      const img = hiveButton.querySelector(".button-hive");
-      img.src = "selected-button.png";
+      hiveButton.querySelector(".button-hive").src = "selected-button.png";
     });
     hiveButton.addEventListener("mouseout", () => {
-      const img = hiveButton.querySelector(".button-hive");
-      img.src = "unselected-button.png";
+      hiveButton.querySelector(".button-hive").src = "unselected-button.png";
     });
 
-    hiveButton.addEventListener("click", () => loadHiveChats(hiveName));
+    hiveButton.addEventListener("click", async () => {
+      const userId = auth.currentUser.uid;
+      const userSnap = await getDoc(doc(db, "users", userId));
+      const userData = userSnap.data();
+      currentUserData = userData;
+      renderChats(hiveName, userData.chats || {});
+    });
+
     hiveContainer.appendChild(hiveButton);
 
-    // Only add a delete button if it's not the default hive
     if (hiveName !== "Unhived") {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
@@ -70,21 +95,40 @@ const renderHives = (hives) => {
       });
       hiveContainer.appendChild(deleteBtn);
     }
+
     chatMenu.appendChild(hiveContainer);
   }
-
-  // Create the "Create Hive" button and append it at the bottom
-  const createHiveBtn = document.createElement("button");
-  createHiveBtn.textContent = "Create Hive";
-  createHiveBtn.classList.add("create-hive-btn"); // Optional: add styling via CSS
-  createHiveBtn.addEventListener("click", () => {
-    const hiveName = prompt("Enter a name for your new hive:");
-    if (hiveName) {
-      createHive(hiveName);
-    }
-  });
-  chatMenu.appendChild(createHiveBtn);
 };
+
+function renderChats(hiveName, chats) {
+  const chatMenu = document.getElementById("chat-menu");
+  chatMenu.innerHTML = "";
+
+  const topButtons = document.createElement("div");
+  topButtons.className = "chat-menu-top-buttons";
+  topButtons.innerHTML = `
+    <button id="hive-button" class="menu-top-button">Hive</button>
+    <button id="back-button" class="menu-top-button">Back</button>
+    <button id="chat-button" class="menu-top-button">Chat</button>
+  `;
+  chatMenu.appendChild(topButtons);
+
+  document.getElementById("hive-button").addEventListener("click", showFriendChatPopup);
+  document.getElementById("chat-button").addEventListener("click", showFriendChatPopup);
+  document.getElementById("back-button").addEventListener("click", () => {
+    renderHives(currentUserData.hives);
+  });
+
+  for (const friendEmail in chats) {
+    const chat = chats[friendEmail];
+    if (chat.hive !== hiveName) continue;
+
+    const chatBtn = document.createElement("button");
+    chatBtn.textContent = friendEmail;
+    chatBtn.className = "chat-entry";
+    chatMenu.appendChild(chatBtn);
+  }
+}
 
 async function createHive(hiveName) {
   if (!hiveName.trim()) return alert("Hive name cannot be empty");
@@ -122,9 +166,47 @@ async function deleteHive(hiveName) {
   renderHives(userData.hives);
 }
 
-// Dummy function to load chats for a given hive
-function loadHiveChats(hiveName) {
-  alert(`Loading chats for hive: ${hiveName}`);
+async function showFriendChatPopup() {
+  const popup = document.getElementById("chat-popup");
+  const list = document.getElementById("friend-list-popup");
+  const closeBtn = document.getElementById("close-popup");
+
+  list.innerHTML = "";
+
+  const userId = auth.currentUser.uid;
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  const userData = userSnap.data();
+
+  const friends = userData.friends || [];
+  const chats = userData.chats || {};
+
+  friends.forEach((friendEmail) => {
+    const alreadyChatted = chats[friendEmail];
+    const btn = document.createElement("button");
+    btn.textContent = alreadyChatted ? `${friendEmail} (Chat Exists)` : `Chat with ${friendEmail}`;
+    btn.disabled = !!alreadyChatted;
+
+    btn.addEventListener("click", async () => {
+      const newChats = {
+        ...chats,
+        [friendEmail]: { hive: "Unhived", createdAt: new Date().toISOString() }
+      };
+      await setDoc(userRef, { ...userData, chats: newChats });
+      popup.classList.add("hidden");
+      alert(`Chat with ${friendEmail} created!`);
+      const updatedUserData = await loadUserData(userId);
+      currentUserData = updatedUserData;
+      renderHives(updatedUserData.hives);
+    });
+
+    const li = document.createElement("li");
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+
+  closeBtn.onclick = () => popup.classList.add("hidden");
+  popup.classList.remove("hidden");
 }
 
 // -----------------------------
@@ -135,11 +217,11 @@ document.addEventListener("DOMContentLoaded", function () {
   setupDropdownMenu();
   setupLogoutButton();
 
-  // Load and render user hives when authentication state changes
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       console.log("User logged in:", user.email);
       const userData = await loadUserData(user.uid);
+      currentUserData = userData;
       if (userData && userData.hives) {
         renderHives(userData.hives);
       }

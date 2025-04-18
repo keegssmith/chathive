@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Friends - ChatHive</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Firebase Import Map -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -26,41 +36,77 @@
 
     <!-- Add Friend Form -->
     <form id="add-friend-form">
-      <input type="text" id="friend-name" placeholder="Enter name..." required />
+      <input type="text" id="friend-name" placeholder="Enter email..." required />
       <button type="submit">Add</button>
     </form>
 
     <!-- Friends List -->
-    <ul id="friends-list">
-      <li>Example <button class="remove-btn">Remove</button></li>
-     
-    </ul>
+    <ul id="friends-list"></ul>
   </div>
 
-  <script>
+  <!-- Firebase-enabled script -->
+  <script type="module">
+    import { auth, db } from "./app.js";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+
     const form = document.getElementById('add-friend-form');
     const input = document.getElementById('friend-name');
     const list = document.getElementById('friends-list');
 
-    // Add friend
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const name = input.value.trim();
-      if (name !== '') {
-        const li = document.createElement('li');
-        li.innerHTML = `${name} <button class="remove-btn">Remove</button>`;
-        list.appendChild(li);
-        input.value = '';
-      }
+    let currentUserRef = null;
+
+    // Renders a friend into the list
+    function addFriendToDOM(email) {
+      const li = document.createElement("li");
+      li.textContent = email;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.classList.add("remove-btn");
+
+      removeBtn.addEventListener("click", async () => {
+        const snap = await getDoc(currentUserRef);
+        const data = snap.data();
+        const updatedFriends = (data.friends || []).filter(f => f !== email);
+        await setDoc(currentUserRef, { ...data, friends: updatedFriends });
+        li.remove();
+      });
+
+      li.appendChild(removeBtn);
+      list.appendChild(li);
+    }
+
+    // On auth, load user and their friends
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+
+      currentUserRef = doc(db, "users", user.uid);
+      const snap = await getDoc(currentUserRef);
+      const data = snap.data();
+      const friends = data.friends || [];
+
+      friends.forEach(addFriendToDOM);
     });
 
-    // Remove friend
-    list.addEventListener('click', e => {
-      if (e.target.classList.contains('remove-btn')) {
-        e.target.parentElement.remove();
+    // Add new friend
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = input.value.trim();
+      if (!email) return;
+
+      const snap = await getDoc(currentUserRef);
+      const data = snap.data();
+      const friends = data.friends || [];
+
+      if (!friends.includes(email)) {
+        friends.push(email);
+        await setDoc(currentUserRef, { ...data, friends });
+        addFriendToDOM(email);
       }
+
+      input.value = "";
     });
   </script>
-
 </body>
 </html>
