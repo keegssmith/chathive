@@ -31,6 +31,16 @@ html, body {
   height: 15vh;
 }
 
+.hive-dropdown {
+  margin-left: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  background-color: #EDE9DF;
+  border: 1px solid #6C7273;
+}
+
+
 /* Layout Container */
 #main-layout {
   position: absolute;
@@ -44,13 +54,16 @@ html, body {
 
 /* Sidebar */
 #chat-menu {
-  width: 20%;
+  border-radius: 0 0 5% 0;
+  width: 30%;
   height: 100%;
   background-color: #131F29;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-top: 20px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 /* Top Buttons Inside Sidebar */
@@ -103,7 +116,8 @@ html, body {
   transform: translate(-50%, -50%);
   font-size: 1rem;
   font-weight: bold;
-  color: #EDE9DF;
+  color: #EDE9DF;;
+  text-shadow: #9f853f;
   pointer-events: none;
 }
 
@@ -369,3 +383,88 @@ html, body {
 #friend-list-popup button:hover {
   background-color: #9f853f;
 }
+
+/* Friend entry layout */
+.friend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #D8AE47;
+  color: #131F29;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+/* Friend email text */
+.friend-name {
+  flex: 1;
+}
+
+/* Button group for actions */
+.friend-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Styled action buttons like Accept / Decline / Delete */
+.friend-btn {
+  background-color: #131F29;
+  color: #EDE9DF;
+  border: 1px solid #EDE9DF;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.friend-btn:hover {
+  background-color: #6C7273;
+  border-color: #D8AE47;
+  color: #D8AE47;
+}
+
+/* Align all hives in a horizontal row */
+#hive-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+/* Style each hive container */
+.hive-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #D8AE47;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #131F29;
+  font-size: 1.1rem;
+}
+
+.friend-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.friend-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
