@@ -51,6 +51,9 @@ html, body {
   flex-direction: column;
   align-items: center;
   padding-top: 20px;
+  overflow-y: auto;      
+  scrollbar-width: thin;   
+  scrollbar-color: #D8AE47 transparent; 
 }
 
 /* Top Buttons Inside Sidebar */
@@ -63,7 +66,7 @@ html, body {
 
 .menu-top-button {
   background-color: #D8AE47;
-  color: #EDE9DF;
+  color: #131F29;
   border: 1px solid #EDE9DF;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -103,7 +106,7 @@ html, body {
   transform: translate(-50%, -50%);
   font-size: 1rem;
   font-weight: bold;
-  color: #EDE9DF;
+  color: #131F29;
   pointer-events: none;
 }
 
@@ -234,7 +237,7 @@ html, body {
 
 .dropdown-item:hover {
   background: #D8AE47;
-  color: #EDE9DF;
+  color: #131F29;
 }
 
 /* Friends Page */
@@ -293,7 +296,7 @@ html, body {
 #add-friend-form button {
   padding: 10px 15px;
   background-color: #D8AE47;
-  color: #EDE9DF;
+  color: #131F29;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -359,7 +362,7 @@ html, body {
   width: 100%;
   padding: 10px;
   background-color: #D8AE47;
-  color: #EDE9DF;
+  color: #131F29;
   border: none;
   border-radius: 5px;
   font-weight: bold;
@@ -368,4 +371,101 @@ html, body {
 
 #friend-list-popup button:hover {
   background-color: #9f853f;
+}
+
+.chat-entry {
+  width: 90%;
+  margin: 10px auto;
+  padding: 10px 15px;
+  font-size: 1rem;
+  background-color: #D8AE47;
+  color: #131F29;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0px 2px 5px rgba(0,0,0,0.15);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.chat-entry:hover {
+  background-color: #9f853f;
+  transform: translateY(-1px);
+}
+
+#hive-context-menu {
+  position: absolute;
+  background-color: #EDE9DF;
+  border: 1px solid #D8AE47;
+  border-radius: 5px;
+  padding: 5px 0;
+  z-index: 9999;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+}
+
+#hive-context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 15px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-weight: bold;
+  color: #131F29;
+  cursor: pointer;
+}
+
+#hive-context-menu button:hover {
+  background-color: #D8AE47;
+  color: #EDE9DF;
+}
+
+#chat-context-menu {
+  position: absolute;
+  background-color: #EDE9DF;
+  border: 1px solid #D8AE47;
+  border-radius: 5px;
+  z-index: 9999;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#chat-context-menu button {
+  display: block;
+  padding: 8px 15px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  font-weight: bold;
+  color: #131F29;
+  cursor: pointer;
+}
+
+#chat-context-menu button:hover {
+  background-color: #D8AE47;
+  color: #EDE9DF;
+}
+
+#hive-checkbox-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+#hive-checkbox-form label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #131F29;
+}
+
+#hive-checkbox-form input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.hidden {
+  display: none !important;
 }

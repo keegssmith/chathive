@@ -19,7 +19,9 @@
 
   <!-- Header -->
   <header id="main-header">
-    <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo" />
+    <a href="index.html">
+      <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo" />
+    </a>    
   </header>
 
   <!-- Menu Button -->
@@ -51,15 +53,47 @@
   </main>
 
   <!-- Chat Creation Popup -->
-<div id="chat-popup" class="popup hidden">
-  <div class="popup-content">
-    <h3>Select a friend to chat with:</h3>
-    <ul id="friend-list-popup"></ul>
-    <button id="close-popup">Close</button>
+  <div id="chat-popup" class="popup hidden">
+    <div class="popup-content">
+      <h3>Select a friend to chat with:</h3>
+      <ul id="friend-list-popup"></ul>
+      <button id="close-popup">Close</button>
+    </div>
   </div>
-</div>
+
+  <!-- Chat Hive Selection Popup -->
+  <div id="create-chat-hives-popup" class="popup hidden">
+    <div class="popup-content">
+      <h3>Select hives for this chat:</h3>
+      <form id="chat-hive-checkbox-form"></form>
+      <button id="chat-hive-save">Create Chat</button>
+      <button id="chat-hive-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Custom Hive Context Menu -->
+  <div id="hive-context-menu" class="hidden">
+    <button id="rename-hive">Rename Hive</button>
+    <button id="delete-hive">Delete Hive</button>
+  </div>
+
+  <!-- Chat Context Menu -->
+  <div id="chat-context-menu" class="hidden">
+    <button id="add-to-hives-btn">Add to Hives</button>
+  </div>
+
+  <!-- Add Chat to Hives Popup -->
+  <div id="add-to-hives-popup" class="popup hidden">
+    <div class="popup-content">
+      <h3>Select hives to include this chat in:</h3>
+      <form id="hive-checkbox-form"></form>
+      <button id="add-to-hives-save">Save</button>
+      <button id="add-to-hives-cancel">Cancel</button>
+    </div>
+  </div>
 
   <script type="module" src="./app.js"></script>
   <script type="module" src="./index.js"></script>
+
 </body>
 </html>
