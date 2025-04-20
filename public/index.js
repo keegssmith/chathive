@@ -40,36 +40,7 @@ const loadUserData = async (userId) => {
   }
 };
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const userRef = doc(db, "users", user.uid);
-
-   
-    await setDoc(userRef, { email: user.email }, { merge: true });
-
-    const snap = await getDoc(userRef);
-    const data = snap.data();
-
-    // Ensure default hive exists
-    if (!data.hives || Object.keys(data.hives).length === 0) {
-      await updateDoc(userRef, {
-        hives: {
-          Unhived: { default: true, createdAt: new Date().toISOString() }
-        }
-      });
-      data.hives = {
-        Unhived: { default: true, createdAt: new Date().toISOString() }
-      };
-    }
-
-    currentUserData = data;
-    renderHives(currentUserData.hives);
-  } else {
-    window.location.href = "auth.html";
-  }
-});
-
-function renderHives(hives) {
+const renderHives = (hives) => {
   const chatMenu = document.getElementById("chat-menu");
   chatMenu.innerHTML = "";
 
@@ -80,7 +51,7 @@ function renderHives(hives) {
     <button id="chat-button" class="menu-top-button">Chat</button>
   `;
   chatMenu.appendChild(topButtons);
-  
+
   document.getElementById("hive-button").addEventListener("click", () => {
     const hiveName = prompt("Enter a name for your new hive:");
     if (hiveName) {
@@ -115,11 +86,15 @@ function renderHives(hives) {
       currentUserData && renderChats(hiveName, currentUserData.chats || {});
     });
 
+    hiveButton.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showHiveContextMenu(e.pageX, e.pageY, hiveName);
+    });    
+
     hiveContainer.appendChild(hiveButton);
     chatMenu.appendChild(hiveContainer);
   }
-}
-
+};
 
 function renderChats(hiveName, chats) {
   const chatMenu = document.getElementById("chat-menu");
@@ -150,12 +125,6 @@ function renderChats(hiveName, chats) {
     const chat = chats[friendEmail];
     if (!chat.hives || !chat.hives.includes(hiveName)) continue;
 
-    const container = document.createElement("div");
-    container.style.display = "flex";
-    container.style.alignItems = "center";
-    container.style.justifyContent = "space-between";
-    container.style.margin = "10px 0";
-
     const chatBtn = document.createElement("button");
     chatBtn.textContent = friendEmail;
     chatBtn.className = "chat-entry";
@@ -175,18 +144,15 @@ async function createHive(hiveName) {
   const userSnap = await getDoc(userRef);
   let userData = userSnap.exists() ? userSnap.data() : { hives: {} };
 
-      const updatedChats = { ...currentUserData.chats };
-      updatedChats[friendEmail].hive = newHive;
+  userData.hives = userData.hives || {};
 
-      await updateDoc(userRef, { chats: updatedChats });
-      currentUserData.chats = updatedChats;
-      renderChats(hiveName, updatedChats);
-    });
-
-    container.appendChild(chatBtn);
-    container.appendChild(hiveSelect);
-    chatMenu.appendChild(container);
+  if (userData.hives[hiveName]) {
+    return alert("A hive with that name already exists");
   }
+
+  userData.hives[hiveName] = { createdAt: new Date().toISOString() };
+  await setDoc(userRef, userData);
+  renderHives(userData.hives);
 }
 
 async function showFriendChatPopup() {
@@ -406,8 +372,76 @@ function setupLogoutButton() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  setupChat();
-  setupDropdownMenu();
-  setupLogoutButton();
+
+function showHiveContextMenu(x, y, hiveName) {
+  const menu = document.getElementById("hive-context-menu");
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+  menu.classList.remove("hidden");
+
+  const renameBtn = document.getElementById("rename-hive");
+  const deleteBtn = document.getElementById("delete-hive");
+
+  renameBtn.onclick = async () => {
+    const newName = prompt("Rename hive:", hiveName);
+    if (!newName || newName === hiveName) return;
+
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    const data = snap.data();
+
+    if (data.hives[newName]) {
+      alert("That hive already exists.");
+      return;
+    }
+
+    // Rename the hive
+    data.hives[newName] = data.hives[hiveName];
+    delete data.hives[hiveName];
+
+    // Update hive references in chats
+    for (const chat of Object.values(data.chats)) {
+      if (chat.hives?.includes(hiveName)) {
+        chat.hives = chat.hives.map(h => h === hiveName ? newName : h);
+      }
+    }
+
+    await setDoc(userRef, data);
+    currentUserData = data;
+    renderHives(data.hives);
+    menu.classList.add("hidden");
+  };
+
+  deleteBtn.onclick = async () => {
+    if (hiveName === "All") {
+      alert("You can't delete the default 'All' hive.");
+      return;
+    }
+
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    const data = snap.data();
+
+    delete data.hives[hiveName];
+
+    // Remove hive from all chat entries
+    for (const chat of Object.values(data.chats)) {
+      if (chat.hives?.includes(hiveName)) {
+        chat.hives = chat.hives.filter(h => h !== hiveName);
+      }
+    }
+
+    await setDoc(userRef, data);
+    currentUserData = data;
+    renderHives(data.hives);
+    menu.classList.add("hidden");
+  };
+}
+
+// Hide the context menu if the user clicks anywhere else
+document.addEventListener("click", () => {
+  const hiveMenu = document.getElementById("hive-context-menu");
+  if (hiveMenu) hiveMenu.classList.add("hidden");
 });
