@@ -2,11 +2,10 @@ import { auth, db } from "./app.js";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, deleteField } from "firebase/firestore";
 
-
 let currentUserData = null;
 
-const defaultHives = {
-  Unhived: { default: true, createdAt: new Date().toISOString() },
+const defaultHive = {
+  All: { default: true, createdAt: new Date().toISOString() }
 };
 
 const loadUserData = async (userId) => {
@@ -14,9 +13,9 @@ const loadUserData = async (userId) => {
   const userDoc = await getDoc(userDocRef);
 
   const defaultData = {
-    hives: defaultHives,
+    hives: defaultHive,
     chats: {},
-    friends: [],
+    friends: []
   };
 
   if (userDoc.exists()) {
@@ -81,40 +80,20 @@ function renderHives(hives) {
     <button id="chat-button" class="menu-top-button">Chat</button>
   `;
   chatMenu.appendChild(topButtons);
-
-  document.getElementById("hive-button").addEventListener("click", async () => {
+  
+  document.getElementById("hive-button").addEventListener("click", () => {
     const hiveName = prompt("Enter a name for your new hive:");
-    if (!hiveName || !hiveName.trim()) return;
-
-    const userId = auth.currentUser.uid;
-    const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-
-    const hives = userData.hives || {};
-    if (hives[hiveName]) {
-      alert("A hive with that name already exists.");
-      return;
+    if (hiveName) {
+      createHive(hiveName);
     }
-
-    hives[hiveName] = { createdAt: new Date().toISOString() };
-    await updateDoc(userRef, {
-      [`hives.${hiveName}`]: { createdAt: new Date().toISOString() }
-    });
-    currentUserData.hives = hives;
-    renderHives(hives);
   });
 
   document.getElementById("chat-button").addEventListener("click", showFriendChatPopup);
 
-  
-  const sortedHives = Object.keys(hives).sort((a, b) => {
-    if (a === "Unhived") return -1;
-    if (b === "Unhived") return 1;
-    return a.localeCompare(b);
-  });
+  const hiveNames = Object.keys(hives).filter(name => name !== "All").sort();
+  hiveNames.unshift("All");
 
-  for (const hiveName of sortedHives) {
+  for (const hiveName of hiveNames) {
     const hiveContainer = document.createElement("div");
     hiveContainer.classList.add("hive-container");
 
@@ -132,40 +111,11 @@ function renderHives(hives) {
       hiveButton.querySelector(".button-hive").src = "unselected-button.png";
     });
 
-    hiveButton.addEventListener("click", async () => {
-      const userId = auth.currentUser.uid;
-      const userSnap = await getDoc(doc(db, "users", userId));
-      const userData = userSnap.data();
-      currentUserData = userData;
-      renderChats(hiveName, userData.chats || {});
+    hiveButton.addEventListener("click", () => {
+      currentUserData && renderChats(hiveName, currentUserData.chats || {});
     });
 
-    const hiveControls = document.createElement("div");
-    hiveControls.style.display = "flex";
-    hiveControls.style.alignItems = "center";
-    hiveControls.style.gap = "8px";
-
-    hiveControls.appendChild(hiveButton);
-
-    if (hiveName !== "Unhived") {
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "×";
-      deleteBtn.className = "friend-btn";
-      deleteBtn.style.padding = "5px 10px";
-      deleteBtn.style.fontSize = "1rem";
-      deleteBtn.title = `Delete hive "${hiveName}"`;
-
-      deleteBtn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        if (confirm(`Delete the hive "${hiveName}"?`)) {
-          await deleteHive(hiveName);
-        }
-      });
-
-      hiveControls.appendChild(deleteBtn);
-    }
-
-    hiveContainer.appendChild(hiveControls);
+    hiveContainer.appendChild(hiveButton);
     chatMenu.appendChild(hiveContainer);
   }
 }
@@ -184,7 +134,13 @@ function renderChats(hiveName, chats) {
   `;
   chatMenu.appendChild(topButtons);
 
-  document.getElementById("hive-button").addEventListener("click", showFriendChatPopup);
+  document.getElementById("hive-button").addEventListener("click", () => {
+    const hiveName = prompt("Enter a name for your new hive:");
+    if (hiveName) {
+      createHive(hiveName);
+    }
+  });
+
   document.getElementById("chat-button").addEventListener("click", showFriendChatPopup);
   document.getElementById("back-button").addEventListener("click", () => {
     renderHives(currentUserData.hives);
@@ -192,7 +148,7 @@ function renderChats(hiveName, chats) {
 
   for (const friendEmail in chats) {
     const chat = chats[friendEmail];
-    if (chat.hive !== hiveName) continue;
+    if (!chat.hives || !chat.hives.includes(hiveName)) continue;
 
     const container = document.createElement("div");
     container.style.display = "flex";
@@ -201,25 +157,23 @@ function renderChats(hiveName, chats) {
     container.style.margin = "10px 0";
 
     const chatBtn = document.createElement("button");
-    chatBtn.textContent = `Chat with ${friendEmail}`;
-    chatBtn.className = "friend-btn";
+    chatBtn.textContent = friendEmail;
+    chatBtn.className = "chat-entry";
 
-    // Dropdown for hive selection
-    const hiveSelect = document.createElement("select");
-    hiveSelect.className = "hive-dropdown";
+    chatBtn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showChatContextMenu(e.pageX, e.pageY, friendEmail);
+    });
 
-    for (const name in currentUserData.hives) {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      if (name === chat.hive) option.selected = true;
-      hiveSelect.appendChild(option);
-    }
+    chatMenu.appendChild(chatBtn);
+  }
+}
 
-    hiveSelect.addEventListener("change", async (e) => {
-      const newHive = e.target.value;
-      const userId = auth.currentUser.uid;
-      const userRef = doc(db, "users", userId);
+async function createHive(hiveName) {
+  const userId = auth.currentUser.uid;
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  let userData = userSnap.exists() ? userSnap.data() : { hives: {} };
 
       const updatedChats = { ...currentUserData.chats };
       updatedChats[friendEmail].hive = newHive;
@@ -235,27 +189,6 @@ function renderChats(hiveName, chats) {
   }
 }
 
-
-async function deleteHive(hiveName) {
-  if (hiveName === "Unhived") {
-    return alert("The default 'Unhived' hive cannot be deleted.");
-  }
-
-  const userId = auth.currentUser.uid;
-  const userRef = doc(db, "users", userId);
-
-  try {
-    await updateDoc(userRef, {
-      [`hives.${hiveName}`]: deleteField()
-    });
-
-    delete currentUserData.hives[hiveName];
-    renderHives(currentUserData.hives);
-  } catch (err) {
-    console.error("Failed to delete hive:", err);
-    alert("Something went wrong while deleting the hive.");
-  }
-}
 async function showFriendChatPopup() {
   const popup = document.getElementById("chat-popup");
   const list = document.getElementById("friend-list-popup");
@@ -270,6 +203,7 @@ async function showFriendChatPopup() {
 
   const friends = userData.friends || [];
   const chats = userData.chats || {};
+  const hives = Object.keys(userData.hives).filter(h => h !== "All");
 
   friends.forEach((friendEmail) => {
     const alreadyChatted = chats[friendEmail];
@@ -277,18 +211,11 @@ async function showFriendChatPopup() {
     btn.textContent = alreadyChatted ? `${friendEmail} (Chat Exists)` : `Chat with ${friendEmail}`;
     btn.disabled = !!alreadyChatted;
 
-    btn.addEventListener("click", async () => {
-      const newChats = {
-        ...chats,
-        [friendEmail]: { hive: "Unhived", createdAt: new Date().toISOString() }
-      };
-      await setDoc(userRef, { ...userData, chats: newChats }, { merge: true });
+    btn.addEventListener("click", () => {
+      openCreateChatHivesPopup(friendEmail);
       popup.classList.add("hidden");
-      alert(`Chat with ${friendEmail} created!`);
-      const updatedUserData = await loadUserData(userId);
-      currentUserData = updatedUserData;
-      renderHives(updatedUserData.hives);
     });
+    
 
     const li = document.createElement("li");
     li.appendChild(btn);
@@ -298,6 +225,135 @@ async function showFriendChatPopup() {
   closeBtn.onclick = () => popup.classList.add("hidden");
   popup.classList.remove("hidden");
 }
+
+function openCreateChatHivesPopup(friendEmail) {
+  const popup = document.getElementById("create-chat-hives-popup");
+  const form = document.getElementById("chat-hive-checkbox-form");
+  const saveBtn = document.getElementById("chat-hive-save");
+  const cancelBtn = document.getElementById("chat-hive-cancel");
+
+  form.innerHTML = "";
+
+  const availableHives = Object.keys(currentUserData.hives || {}).filter(h => h !== "All");
+
+  availableHives.forEach(hive => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = hive;
+
+    label.appendChild(checkbox);
+    label.append(` ${hive}`);
+    form.appendChild(label);
+  });
+
+  cancelBtn.onclick = () => popup.classList.add("hidden");
+
+  saveBtn.onclick = async () => {
+    const selected = Array.from(form.querySelectorAll("input[type='checkbox']:checked")).map(cb => cb.value);
+    const finalHives = ["All", ...selected];
+
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    const data = snap.data();
+
+    data.chats[friendEmail] = {
+      hives: [...new Set(finalHives)],
+      createdAt: new Date().toISOString()
+    };
+
+    await setDoc(userRef, data);
+    popup.classList.add("hidden");
+
+    const updatedUserData = await loadUserData(userId);
+    currentUserData = updatedUserData;
+    renderHives(updatedUserData.hives);
+  };
+
+  popup.classList.remove("hidden");
+}
+
+function showChatContextMenu(x, y, friendEmail) {
+  const menu = document.getElementById("chat-context-menu");
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+  menu.classList.remove("hidden");
+
+  const addBtn = document.getElementById("add-to-hives-btn");
+  addBtn.onclick = () => {
+    menu.classList.add("hidden");
+    openAddToHivesPopup(friendEmail);
+  };
+}
+
+function openAddToHivesPopup(friendEmail) {
+  const popup = document.getElementById("add-to-hives-popup");
+  const form = document.getElementById("hive-checkbox-form");
+  const saveBtn = document.getElementById("add-to-hives-save");
+  const cancelBtn = document.getElementById("add-to-hives-cancel");
+
+  form.innerHTML = "";
+
+  const availableHives = Object.keys(currentUserData.hives || {}).filter(h => h !== "All");
+  const chat = currentUserData.chats?.[friendEmail];
+  const currentHives = chat?.hives || ["All"];
+
+  availableHives.forEach(hive => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = hive;
+    checkbox.checked = currentHives.includes(hive);
+
+    label.appendChild(checkbox);
+    label.append(` ${hive}`);
+    form.appendChild(label);
+  });
+
+  saveBtn.onclick = async () => {
+    const selected = Array.from(form.querySelectorAll("input[type='checkbox']:checked")).map(cb => cb.value);
+    const final = ["All", ...selected];
+
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    const data = snap.data();
+
+    if (data.chats && data.chats[friendEmail]) {
+      data.chats[friendEmail].hives = [...new Set(final)];
+      await setDoc(userRef, data);
+      currentUserData = data;
+      renderChats("All", data.chats);
+    }
+
+    popup.classList.add("hidden");
+  };
+
+  cancelBtn.onclick = () => popup.classList.add("hidden");
+  popup.classList.remove("hidden");
+}
+
+document.addEventListener("click", () => {
+  document.getElementById("chat-context-menu").classList.add("hidden");
+  document.getElementById("add-to-hives-popup").classList.add("hidden");
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupChat();
+  setupDropdownMenu();
+  setupLogoutButton();
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const userData = await loadUserData(user.uid);
+      currentUserData = userData;
+      renderHives(userData.hives);
+    } else {
+      window.location.href = "auth.html";
+    }
+  });
+});
 
 function setupChat() {
   const sendButton = document.getElementById("send-message");
@@ -345,14 +401,8 @@ function setupLogoutButton() {
   const logoutButton = document.getElementById("logout-button");
   logoutButton.addEventListener("click", function () {
     signOut(auth)
-      .then(() => {
-        console.log("User signed out");
-        alert("Logged out successfully!");
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error.message);
-        alert(error.message);
-      });
+      .then(() => alert("Logged out successfully!"))
+      .catch((error) => alert(error.message));
   });
 }
 
