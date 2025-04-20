@@ -5,108 +5,265 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Friends - ChatHive</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Firebase Import Map -->
   <script type="importmap">
-  {
-    "imports": {
-      "firebase/app": "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js",
-      "firebase/auth": "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js",
-      "firebase/firestore": "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"
+      }
     }
-  }
   </script>
 </head>
 <body>
-
-  <!-- Header -->
   <header id="main-header">
     <a href="index.html">
-      <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo" />
+      <img src="chat-hive-logo.png" alt="Chat Hive Logo" id="chat-hive-logo">
     </a>
   </header>
 
-  <!-- Back Button -->
   <div class="menu-container">
-    <button id="menu-button" onclick="location.href='index.html'">
-      <img src="hive-menu.png" alt="Back to Chat">
+    <button id="menu-button" >
+      <img src="hive-menu.png">
     </button>
   </div>
 
-  <!-- Friends Page Content -->
   <div id="friends-page" class="friends-container">
     <h2>Your Hive</h2>
 
-    <!-- Add Friend Form -->
     <form id="add-friend-form">
       <input type="text" id="friend-name" placeholder="Enter email..." required />
-      <button type="submit">Add</button>
+      <button type="submit">Send Friend Request</button>
     </form>
 
-    <!-- Friends List -->
+    <h3>Pending Requests</h3>
+    <ul id="incoming-requests"></ul>
+
+    <h3>Sent Requests</h3>
+    <ul id="outgoing-requests"></ul>
+
+    <h3>Friends</h3>
     <ul id="friends-list"></ul>
   </div>
 
-  <!-- Firebase-enabled script -->
   <script type="module">
     import { auth, db } from "./app.js";
     import { onAuthStateChanged } from "firebase/auth";
-    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import {
+      doc, getDoc, setDoc, updateDoc, query,
+      where, collection, getDocs, arrayUnion, arrayRemove
+    } from "firebase/firestore";
 
     const form = document.getElementById('add-friend-form');
     const input = document.getElementById('friend-name');
-    const list = document.getElementById('friends-list');
+    const friendsList = document.getElementById('friends-list');
+    const requestList = document.getElementById('incoming-requests');
+    const outgoingList = document.getElementById('outgoing-requests');
 
     let currentUserRef = null;
+    let currentUserEmail = null;
 
-    // Renders a friend into the list
-    function addFriendToDOM(email) {
-      const li = document.createElement("li");
-      li.textContent = email;
+    function renderFriend(email) {
+    const li = document.createElement("li");
+    li.className = "friend-item"; // Add a class for layout styling
 
-      const removeBtn = document.createElement("button");
-      removeBtn.textContent = "Remove";
-      removeBtn.classList.add("remove-btn");
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "friend-name";
+    nameSpan.textContent = email;
 
-      removeBtn.addEventListener("click", async () => {
-        const snap = await getDoc(currentUserRef);
-        const data = snap.data();
-        const updatedFriends = (data.friends || []).filter(f => f !== email);
-        await setDoc(currentUserRef, { ...data, friends: updatedFriends });
-        li.remove();
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Remove";
+    removeBtn.className = "remove-btn";
+    removeBtn.onclick = () => removeFriend(email);
+
+    const actions = document.createElement("div");
+    actions.className = "friend-actions";
+    actions.appendChild(removeBtn);
+
+    li.appendChild(nameSpan);
+    li.appendChild(actions);
+    friendsList.appendChild(li);
+  }
+
+
+
+    async function removeFriend(email) {
+      const confirmDelete = confirm(`Are you sure you want to remove ${email} from your friends?`);
+      if (!confirmDelete) return;
+
+      const userSnap = await getDoc(currentUserRef);
+      const userData = userSnap.data();
+
+      // 1. Remove friend from your list
+      await updateDoc(currentUserRef, {
+        friends: arrayRemove(email),
+        chats: { ...(userData.chats || {}) }
       });
 
-      li.appendChild(removeBtn);
-      list.appendChild(li);
+      // 2. Remove you from their list
+      const friendDoc = await userExistsByEmail(email);
+      if (friendDoc) {
+        const friendData = friendDoc.data();
+        await updateDoc(friendDoc.ref, {
+          friends: arrayRemove(currentUserEmail)
+        });
+      }
+
+      // 3. Optionally remove chat entry
+      const chats = { ...(userData.chats || {}) };
+      if (chats[email]) {
+        delete chats[email];
+        await updateDoc(currentUserRef, { chats });
+      }
+
+      alert(`${email} removed from your friends.`);
+      location.reload();
     }
 
-    // On auth, load user and their friends
+    function renderRequest(email) {
+      const li = document.createElement("li");
+      li.className = "friend-item";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "friend-name";
+      nameSpan.textContent = email;
+
+      const actions = document.createElement("div");
+      actions.className = "friend-actions";
+
+      const acceptBtn = document.createElement("button");
+      acceptBtn.textContent = "Accept";
+      acceptBtn.className = "friend-btn";
+      acceptBtn.onclick = () => acceptRequest(email);
+
+      const declineBtn = document.createElement("button");
+      declineBtn.textContent = "Decline";
+      declineBtn.className = "friend-btn";
+      declineBtn.onclick = () => declineRequest(email);
+
+      actions.appendChild(acceptBtn);
+      actions.appendChild(declineBtn);
+
+      li.appendChild(nameSpan);
+      li.appendChild(actions);
+      requestList.appendChild(li);
+    }
+
+    function renderOutgoing(email) {
+      const li = document.createElement("li");
+      li.className = "friend-item";
+
+      const span = document.createElement("span");
+      span.className = "friend-name";
+      span.textContent = `${email} (Pending...)`;
+
+      li.appendChild(span);
+      outgoingList.appendChild(li);
+    }
+
+    async function userExistsByEmail(email) {
+      const q = query(collection(db, "users"), where("email", "==", email));
+      const snapshot = await getDocs(q);
+      return snapshot.empty ? null : snapshot.docs[0];
+    }
+
+    async function acceptRequest(senderEmail) {
+      const userSnap = await getDoc(currentUserRef);
+      const userData = userSnap.data();
+      const requests = userData.friendRequests || { incoming: [], outgoing: [] };
+
+      await updateDoc(currentUserRef, {
+        friends: arrayUnion(senderEmail),
+        chats: {
+          ...(userData.chats || {}),
+          [senderEmail]: { hive: "Unhived", createdAt: new Date().toISOString() }
+        },
+        friendRequests: {
+          ...requests,
+          incoming: arrayRemove(senderEmail)
+        }
+      });
+
+      const senderDoc = await userExistsByEmail(senderEmail);
+      if (senderDoc) {
+        const senderData = senderDoc.data();
+        await updateDoc(senderDoc.ref, {
+          friends: arrayUnion(currentUserEmail),
+          chats: {
+            ...(senderData.chats || {}),
+            [currentUserEmail]: { hive: "Unhived", createdAt: new Date().toISOString() }
+          },
+          friendRequests: {
+            ...(senderData.friendRequests || {}),
+            outgoing: arrayRemove(currentUserEmail)
+          }
+        });
+      }
+
+      location.reload();
+    }
+
+    async function declineRequest(senderEmail) {
+      await updateDoc(currentUserRef, {
+        friendRequests: {
+          incoming: arrayRemove(senderEmail)
+        }
+      });
+
+      const senderDoc = await userExistsByEmail(senderEmail);
+      if (senderDoc) {
+        await updateDoc(senderDoc.ref, {
+          friendRequests: {
+            outgoing: arrayRemove(currentUserEmail)
+          }
+        });
+      }
+
+      location.reload();
+    }
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
-
+      currentUserEmail = user.email;
       currentUserRef = doc(db, "users", user.uid);
       const snap = await getDoc(currentUserRef);
       const data = snap.data();
-      const friends = data.friends || [];
 
-      friends.forEach(addFriendToDOM);
+      (data.friends || []).forEach(renderFriend);
+      (data.friendRequests?.incoming || []).forEach(renderRequest);
+      (data.friendRequests?.outgoing || []).forEach(renderOutgoing);
     });
 
-    // Add new friend
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = input.value.trim();
-      if (!email) return;
+      const targetEmail = input.value.trim().toLowerCase();
+      if (!targetEmail || targetEmail === currentUserEmail) return alert("Invalid email");
+
+      const targetDoc = await userExistsByEmail(targetEmail);
+      if (!targetDoc) return alert("User does not exist");
 
       const snap = await getDoc(currentUserRef);
       const data = snap.data();
-      const friends = data.friends || [];
+      const requests = data.friendRequests || { incoming: [], outgoing: [] };
 
-      if (!friends.includes(email)) {
-        friends.push(email);
-        await setDoc(currentUserRef, { ...data, friends });
-        addFriendToDOM(email);
-      }
+      if (requests.outgoing.includes(targetEmail)) return alert("Request already sent");
 
+      await updateDoc(currentUserRef, {
+        friendRequests: {
+          ...requests,
+          outgoing: arrayUnion(targetEmail)
+        }
+      });
+
+      const targetData = targetDoc.data();
+      await updateDoc(targetDoc.ref, {
+        friendRequests: {
+          ...(targetData.friendRequests || {}),
+          incoming: arrayUnion(currentUserEmail)
+        }
+      });
+
+      renderOutgoing(targetEmail);
       input.value = "";
     });
   </script>
