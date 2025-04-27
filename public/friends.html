@@ -22,10 +22,15 @@
     </a>
   </header>
 
+  <!-- Menu Button and Dropdown -->
   <div class="menu-container">
-    <button id="menu-button" >
-      <img src="hive-menu.png">
+    <button id="menu-button">
+      <img src="hive-menu.png" alt="Menu" />
     </button>
+    <div id="menu-dropdown" class="hidden">
+      <button class="dropdown-item" id="home-button" onclick="location.href='index.html'">Home</button>
+      <button class="dropdown-item" id="logout-button">Logout</button>
+    </div>
   </div>
 
   <div id="friends-page" class="friends-container">
@@ -48,12 +53,13 @@
 
   <script type="module">
     import { auth, db } from "./app.js";
-    import { onAuthStateChanged } from "firebase/auth";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
     import {
       doc, getDoc, setDoc, updateDoc, query,
       where, collection, getDocs, arrayUnion, arrayRemove
     } from "firebase/firestore";
 
+    // Friend list rendering and logic
     const form = document.getElementById('add-friend-form');
     const input = document.getElementById('friend-name');
     const friendsList = document.getElementById('friends-list');
@@ -64,207 +70,152 @@
     let currentUserEmail = null;
 
     function renderFriend(email) {
-    const li = document.createElement("li");
-    li.className = "friend-item"; // Add a class for layout styling
-
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "friend-name";
-    nameSpan.textContent = email;
-
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "Remove";
-    removeBtn.className = "remove-btn";
-    removeBtn.onclick = () => removeFriend(email);
-
-    const actions = document.createElement("div");
-    actions.className = "friend-actions";
-    actions.appendChild(removeBtn);
-
-    li.appendChild(nameSpan);
-    li.appendChild(actions);
-    friendsList.appendChild(li);
-  }
-
-
+      const li = document.createElement("li");
+      li.className = "friend-item";
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "friend-name";
+      nameSpan.textContent = email;
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "remove-btn";
+      removeBtn.onclick = () => removeFriend(email);
+      const actions = document.createElement("div");
+      actions.className = "friend-actions";
+      actions.appendChild(removeBtn);
+      li.appendChild(nameSpan);
+      li.appendChild(actions);
+      friendsList.appendChild(li);
+    }
 
     async function removeFriend(email) {
-      const confirmDelete = confirm(`Are you sure you want to remove ${email} from your friends?`);
-      if (!confirmDelete) return;
-
+      if (!confirm(`Remove ${email} from friends?`)) return;
       const userSnap = await getDoc(currentUserRef);
       const userData = userSnap.data();
-
-      // 1. Remove friend from your list
-      await updateDoc(currentUserRef, {
-        friends: arrayRemove(email),
-        chats: { ...(userData.chats || {}) }
-      });
-
-      // 2. Remove you from their list
+      await updateDoc(currentUserRef, { friends: arrayRemove(email) });
       const friendDoc = await userExistsByEmail(email);
-      if (friendDoc) {
-        const friendData = friendDoc.data();
-        await updateDoc(friendDoc.ref, {
-          friends: arrayRemove(currentUserEmail)
-        });
-      }
-
-      // 3. Optionally remove chat entry
-      const chats = { ...(userData.chats || {}) };
-      if (chats[email]) {
-        delete chats[email];
-        await updateDoc(currentUserRef, { chats });
-      }
-
-      alert(`${email} removed from your friends.`);
+      if (friendDoc) await updateDoc(friendDoc.ref, { friends: arrayRemove(currentUserEmail) });
+      alert(`${email} removed.`);
       location.reload();
     }
 
     function renderRequest(email) {
       const li = document.createElement("li");
       li.className = "friend-item";
-
-      const nameSpan = document.createElement("span");
-      nameSpan.className = "friend-name";
-      nameSpan.textContent = email;
-
+      const span = document.createElement("span");
+      span.className = "friend-name";
+      span.textContent = email;
       const actions = document.createElement("div");
       actions.className = "friend-actions";
-
       const acceptBtn = document.createElement("button");
       acceptBtn.textContent = "Accept";
       acceptBtn.className = "friend-btn";
       acceptBtn.onclick = () => acceptRequest(email);
-
       const declineBtn = document.createElement("button");
       declineBtn.textContent = "Decline";
       declineBtn.className = "friend-btn";
       declineBtn.onclick = () => declineRequest(email);
-
-      actions.appendChild(acceptBtn);
-      actions.appendChild(declineBtn);
-
-      li.appendChild(nameSpan);
-      li.appendChild(actions);
+      actions.append(acceptBtn, declineBtn);
+      li.append(span, actions);
       requestList.appendChild(li);
     }
 
     function renderOutgoing(email) {
       const li = document.createElement("li");
       li.className = "friend-item";
-
       const span = document.createElement("span");
       span.className = "friend-name";
       span.textContent = `${email} (Pending...)`;
-
       li.appendChild(span);
       outgoingList.appendChild(li);
     }
 
     async function userExistsByEmail(email) {
       const q = query(collection(db, "users"), where("email", "==", email));
-      const snapshot = await getDocs(q);
-      return snapshot.empty ? null : snapshot.docs[0];
+      const snap = await getDocs(q);
+      return snap.empty ? null : snap.docs[0];
     }
 
     async function acceptRequest(senderEmail) {
       const userSnap = await getDoc(currentUserRef);
       const userData = userSnap.data();
-      const requests = userData.friendRequests || { incoming: [], outgoing: [] };
-
       await updateDoc(currentUserRef, {
         friends: arrayUnion(senderEmail),
-        chats: {
-          ...(userData.chats || {}),
-          [senderEmail]: { hive: "Unhived", createdAt: new Date().toISOString() }
-        },
-        friendRequests: {
-          ...requests,
-          incoming: arrayRemove(senderEmail)
-        }
+        friendRequests: { incoming: arrayRemove(senderEmail) }
       });
-
       const senderDoc = await userExistsByEmail(senderEmail);
       if (senderDoc) {
-        const senderData = senderDoc.data();
         await updateDoc(senderDoc.ref, {
           friends: arrayUnion(currentUserEmail),
-          chats: {
-            ...(senderData.chats || {}),
-            [currentUserEmail]: { hive: "Unhived", createdAt: new Date().toISOString() }
-          },
-          friendRequests: {
-            ...(senderData.friendRequests || {}),
-            outgoing: arrayRemove(currentUserEmail)
-          }
+          friendRequests: { outgoing: arrayRemove(currentUserEmail) }
         });
       }
-
       location.reload();
     }
 
     async function declineRequest(senderEmail) {
-      await updateDoc(currentUserRef, {
-        friendRequests: {
-          incoming: arrayRemove(senderEmail)
-        }
-      });
-
+      await updateDoc(currentUserRef, { friendRequests: { incoming: arrayRemove(senderEmail) } });
       const senderDoc = await userExistsByEmail(senderEmail);
-      if (senderDoc) {
-        await updateDoc(senderDoc.ref, {
-          friendRequests: {
-            outgoing: arrayRemove(currentUserEmail)
-          }
-        });
-      }
-
+      if (senderDoc) await updateDoc(senderDoc.ref, { friendRequests: { outgoing: arrayRemove(currentUserEmail) } });
       location.reload();
     }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
-      currentUserEmail = user.email;
-      currentUserRef = doc(db, "users", user.uid);
-      const snap = await getDoc(currentUserRef);
-      const data = snap.data();
-
-      (data.friends || []).forEach(renderFriend);
-      (data.friendRequests?.incoming || []).forEach(renderRequest);
-      (data.friendRequests?.outgoing || []).forEach(renderOutgoing);
-    });
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const targetEmail = input.value.trim().toLowerCase();
-      if (!targetEmail || targetEmail === currentUserEmail) return alert("Invalid email");
-
-      const targetDoc = await userExistsByEmail(targetEmail);
-      if (!targetDoc) return alert("User does not exist");
-
-      const snap = await getDoc(currentUserRef);
-      const data = snap.data();
-      const requests = data.friendRequests || { incoming: [], outgoing: [] };
-
-      if (requests.outgoing.includes(targetEmail)) return alert("Request already sent");
-
-      await updateDoc(currentUserRef, {
-        friendRequests: {
-          ...requests,
-          outgoing: arrayUnion(targetEmail)
+    // Dropdown menu functionality
+    function setupDropdownMenu() {
+      const menuButton = document.getElementById("menu-button");
+      const menuDropdown = document.getElementById("menu-dropdown");
+      menuButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        menuDropdown.classList.toggle("hidden");
+      });
+      document.addEventListener("click", (e) => {
+        if (!menuButton.contains(e.target) && !menuDropdown.contains(e.target)) {
+          menuDropdown.classList.add("hidden");
         }
       });
+    }
 
-      const targetData = targetDoc.data();
-      await updateDoc(targetDoc.ref, {
-        friendRequests: {
-          ...(targetData.friendRequests || {}),
-          incoming: arrayUnion(currentUserEmail)
+    function setupLogoutButton() {
+      const logoutBtn = document.getElementById("logout-button");
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth)
+          .then(() => alert("Logged out successfully!"))
+          .catch(err => alert(err.message));
+      });
+    }
+
+    // Initialize on DOM load
+    document.addEventListener("DOMContentLoaded", () => {
+      setupDropdownMenu();
+      setupLogoutButton();
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "auth.html";
+          return;
         }
+        currentUserEmail = user.email;
+        currentUserRef = doc(db, "users", user.uid);
+        const snap = await getDoc(currentUserRef);
+        const data = snap.data();
+        (data.friendRequests?.incoming || []).forEach(renderRequest);
+        (data.friendRequests?.outgoing || []).forEach(renderOutgoing);
+        (data.friends || []).forEach(renderFriend);
       });
 
-      renderOutgoing(targetEmail);
-      input.value = "";
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = input.value.trim().toLowerCase();
+        if (!email || email === currentUserEmail) return alert("Invalid email");
+        const target = await userExistsByEmail(email);
+        if (!target) return alert("User not found");
+        const snap = await getDoc(currentUserRef);
+        const reqs = snap.data().friendRequests || { incoming: [], outgoing: [] };
+        if (reqs.outgoing.includes(email)) return alert("Request already sent");
+        await updateDoc(currentUserRef, { friendRequests: { ...reqs, outgoing: arrayUnion(email) } });
+        await updateDoc(target.ref, { friendRequests: { ...(target.data().friendRequests||{}), incoming: arrayUnion(currentUserEmail) } });
+        renderOutgoing(email);
+        input.value = "";
+      });
     });
   </script>
 </body>
