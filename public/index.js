@@ -1,6 +1,6 @@
 import { auth, db } from "./app.js";
 import { signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc, deleteField } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteField, collection, query, where, getDocs } from "firebase/firestore";
 
 let currentUserData = null;
 
@@ -216,25 +216,42 @@ function openCreateChatHivesPopup(friendEmail) {
   cancelBtn.onclick = () => popup.classList.add("hidden");
 
   saveBtn.onclick = async () => {
-    const selected = Array.from(form.querySelectorAll("input[type='checkbox']:checked")).map(cb => cb.value);
+    const selected = Array.from(
+      form.querySelectorAll("input[type='checkbox']:checked")
+    ).map(cb => cb.value);
     const finalHives = ["All", ...selected];
-
-    const userId = auth.currentUser.uid;
-    const userRef = doc(db, "users", userId);
-    const snap = await getDoc(userRef);
-    const data = snap.data();
-
-    data.chats[friendEmail] = {
-      hives: [...new Set(finalHives)],
+    const creatorId = auth.currentUser.uid;
+    const creatorEmail = auth.currentUser.email;
+    const creatorRef = doc(db, "users", creatorId);
+    const creatorSnap = await getDoc(creatorRef);
+    const creatorData = creatorSnap.data();
+  
+    creatorData.chats[friendEmail] = {
+      hives: finalHives,
       createdAt: new Date().toISOString()
     };
+    await setDoc(creatorRef, creatorData, { merge: true });
 
-    await setDoc(userRef, data);
+    const q = query(
+      collection(db, "users"),
+      where("email", "==", friendEmail)
+    );
+    const friendSnap = await getDocs(q);
+    if (!friendSnap.empty) {
+      const friendDoc = friendSnap.docs[0];
+      const friendData = friendDoc.data();
+      friendData.chats = friendData.chats || {};
+      friendData.chats[creatorEmail] = {
+        hives: ["All"],
+        createdAt: new Date().toISOString()
+      };
+      await setDoc(friendDoc.ref, friendData, { merge: true });
+    }
+  
     popup.classList.add("hidden");
-
-    const updatedUserData = await loadUserData(userId);
-    currentUserData = updatedUserData;
-    renderHives(updatedUserData.hives);
+    const updated = await loadUserData(creatorId);
+    currentUserData = updated;
+    renderHives(updated.hives);
   };
 
   popup.classList.remove("hidden");
