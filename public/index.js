@@ -263,18 +263,19 @@ function showChatContextMenu(x, y, friendEmail) {
   menu.style.top = `${y}px`;
   menu.classList.remove("hidden");
 
-  const addBtn = document.getElementById("add-to-hives-btn");
-  addBtn.onclick = () => {
+  const editBtn = document.getElementById("edit-hives-btn");
+  editBtn.onclick = (e) => {
+    e.stopPropagation();
     menu.classList.add("hidden");
-    openAddToHivesPopup(friendEmail);
+    openEditHivesPopup(friendEmail);
   };
 }
 
-function openAddToHivesPopup(friendEmail) {
-  const popup = document.getElementById("add-to-hives-popup");
+function openEditHivesPopup(friendEmail) {
+  const popup = document.getElementById("edit-hives-popup");
   const form = document.getElementById("hive-checkbox-form");
-  const saveBtn = document.getElementById("add-to-hives-save");
-  const cancelBtn = document.getElementById("add-to-hives-cancel");
+  const saveBtn = document.getElementById("edit-hives-save");
+  const cancelBtn = document.getElementById("edit-hives-cancel");
 
   form.innerHTML = "";
 
@@ -317,9 +318,12 @@ function openAddToHivesPopup(friendEmail) {
   popup.classList.remove("hidden");
 }
 
-document.addEventListener("click", () => {
-  document.getElementById("chat-context-menu").classList.add("hidden");
-  document.getElementById("add-to-hives-popup").classList.add("hidden");
+document.addEventListener("click", (e) => {
+  const chatMenu  = document.getElementById("chat-context-menu");
+  const editPopup = document.getElementById("edit-hives-popup");
+
+  if (!chatMenu.contains(e.target))  chatMenu.classList.add("hidden");
+  if (!editPopup.contains(e.target)) editPopup.classList.add("hidden");
 });
 
 document.addEventListener("DOMContentLoaded", () => {
