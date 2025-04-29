@@ -43,7 +43,7 @@
     <div id="chat-menu"></div>
 
     <!-- Main Chat Screen -->
-    <div class="chat-container" id="chat-container">
+    <div class="chat-container hidden" id="chat-container">
       <div id="chat-history" class="chat-history"></div>
       <div id="chat-input">
         <textarea id="message" placeholder="Type a message..."></textarea>
@@ -93,7 +93,13 @@
   </div>
 
   <script type="module" src="./app.js"></script>
-  <script type="module" src="./index.js"></script>
+
+  <script type="module" src="./setup.js"></script>
+  <script type="module" src="./hives.js"></script>
+  <script type="module" src="./chats.js"></script>
+  <script type="module" src="./messages.js"></script>
+  
+  <script type="module" src="./index.js"></script>  
 
 </body>
 </html>
