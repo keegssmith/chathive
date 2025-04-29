@@ -51,14 +51,24 @@ export function renderHives(hives) {
       renderChats(hiveName, currentUserData.chats || {});
     });
 
-    hiveButton.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      showHiveContextMenu(e.pageX, e.pageY, hiveName);
-    });
+    if (hiveName !== "All") {
+      hiveButton.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        showHiveContextMenu(e.pageX, e.pageY, hiveName);
+      });
+    }    
 
     hiveContainer.appendChild(hiveButton);
     chatMenu.appendChild(hiveContainer);
   }
+
+  document.addEventListener("click", () => {
+    const hiveMenu = document.getElementById("hive-context-menu");
+    if (!hiveMenu.classList.contains("hidden")) {
+      hiveMenu.classList.add("hidden");
+    }
+  });
+
 }
 
 export async function createHive(hiveName) {

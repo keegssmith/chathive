@@ -42,6 +42,11 @@ export function renderChats(hiveName, chats) {
 
     chatBtn.addEventListener("click", () => openChat(friendEmail));
 
+    chatBtn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showChatContextMenu(e.pageX, e.pageY, friendEmail);
+    });
+    
     chatMenu.appendChild(chatBtn);
   }
 }
@@ -51,6 +56,12 @@ export function initializeChats() {
   document.addEventListener("createNewHive", (e) => {
     import("./hives.js").then(module => module.createHive(e.detail.hiveName));
   });
+  document.addEventListener("click", () => {
+    const menu = document.getElementById("chat-context-menu");
+    if (!menu.classList.contains("hidden")) {
+      menu.classList.add("hidden");
+    }
+  });  
 }
 
 async function showFriendChatPopup() {
@@ -150,6 +161,69 @@ function openCreateChatHivesPopup(friendEmail) {
       module.currentUserData = updated;
       renderHives(updated.hives);
     });
+  };
+
+  popup.classList.remove("hidden");
+}
+
+function showChatContextMenu(x, y, friendEmail) {
+  const menu = document.getElementById("chat-context-menu");
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+  menu.classList.remove("hidden");
+
+  const editBtn = document.getElementById("edit-hives-btn");
+  editBtn.onclick = () => {
+    openEditHivesPopup(friendEmail);
+    menu.classList.add("hidden");
+  };
+}
+
+function openEditHivesPopup(friendEmail) {
+  const popup = document.getElementById("edit-hives-popup");
+  const form = document.getElementById("hive-checkbox-form");
+  const saveBtn = document.getElementById("edit-hives-save");
+  const cancelBtn = document.getElementById("edit-hives-cancel");
+
+  form.innerHTML = "";
+
+  const allHives = Object.keys(currentUserData.hives || {}).filter(h => h !== "All");
+  const currentHives = currentUserData.chats?.[friendEmail]?.hives || [];
+
+  allHives.forEach(hive => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = hive;
+    checkbox.checked = currentHives.includes(hive);
+
+    label.appendChild(checkbox);
+    label.append(` ${hive}`);
+    form.appendChild(label);
+  });
+
+  cancelBtn.onclick = () => popup.classList.add("hidden");
+
+  saveBtn.onclick = async () => {
+    const selectedHives = Array.from(
+      form.querySelectorAll("input[type='checkbox']:checked")
+    ).map(cb => cb.value);
+
+    // "All" is not shown, but always included
+    const finalHives = ["All", ...selectedHives];
+
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+
+    userData.chats[friendEmail].hives = finalHives;
+    await setDoc(userRef, userData, { merge: true });
+
+    // update local state and UI
+    currentUserData.chats[friendEmail].hives = finalHives;
+    renderHives(currentUserData.hives);
+    popup.classList.add("hidden");
   };
 
   popup.classList.remove("hidden");
