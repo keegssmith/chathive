@@ -136,7 +136,7 @@ html, body {
 
 .message {
   padding: 10px;
-  background-color: #FFFFFF;
+  background-color: #EDE9DF;
   border-radius: 10px;
   margin: 5px 0;
   max-width: 70%;
@@ -179,10 +179,11 @@ html, body {
 /* Menu Button */
 .menu-container {
   position: fixed;
-  top: 2vh;
-  right: 4vw;
+  top: 4vh;
+  right: 3vw; /* or adjust to 3vw if needed */
   z-index: 5;
 }
+
 
 #menu-button {
   height: 7vh;
@@ -190,7 +191,19 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
+
+#menu-button img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
 
 #menu-button img {
   width: 160%;
@@ -554,3 +567,182 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.chat-bubble {
+  max-width: 70%;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  word-wrap: break-word;
+  font-size: 1rem;
+  position: relative;
+}
+
+.sent {
+  align-self: flex-end;
+  background-color: #D8AE47;
+  color: #131F29;
+  border-bottom-right-radius: 4px;
+  margin-left: auto;
+  margin-right: 0;
+  text-align: right;
+}
+
+.received {
+  align-self: flex-start;
+  background-color: #ffffff;
+  color: #131F29;
+  border-bottom-left-radius: 4px;
+  margin-right: auto;
+  margin-left: 0;
+  text-align: left;
+}
+
+.bubble-text {
+  padding-bottom: 4px;
+}
+
+.bubble-timestamp {
+  font-size: 0.75rem;
+  text-align: right;
+  opacity: 0.6;
+}
+
+.bubble-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-bottom: 3px;
+  color: #6C7273;
+}
+
+.popup input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  border: 1px solid #6C7273;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #131F29;
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.popup-buttons button {
+  flex: 1;
+  padding: 10px;
+  background-color: #D8AE47;
+  color: #131F29;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-buttons button:hover {
+  background-color: #9f853f;
+}
+
+.dimmed-chat-button {
+  background-color: #6C7273;
+  color: #EDE9DF;
+  opacity: 0.6;
+  cursor: not-allowed;
+  font-style: italic;
+}
+
+
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  /* Stack layout vertically */
+  #main-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  /* Full width for sidebar on mobile */
+  #chat-menu {
+    width: 100%;
+    height: auto;
+    padding-bottom: 10px;
+  }
+
+  /* Chat container takes full space */
+  .chat-container {
+    width: 100%;
+    padding: 10px;
+    height: auto;
+  }
+
+  .chat-history {
+    max-height: 50vh;
+  }
+
+  /* Adjust input layout */
+  #chat-input {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  #message {
+    width: 100%;
+    height: 60px;
+    font-size: 1rem;
+  }
+
+  #send-message {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  /* Make bubbles more readable on narrow screens */
+  .chat-bubble {
+    max-width: 90%;
+    font-size: 0.95rem;
+  }
+
+  .menu-container {
+    top: 1vh;
+    right: 2vw;
+  }
+
+  .chat-entry {
+    font-size: 1rem;
+    padding: 12px;
+  }
+
+  button {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  
+  /* Make top buttons stretch across screen horizontally */
+  .chat-menu-top-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0;
+    width: 100%;
+    padding: 0 10px 10px;
+  }
+
+  .menu-top-button {
+    flex: 1;
+    margin: 0 5px;
+    text-align: center;
+    font-size: 1rem;
+  }
+  
+}
+
+

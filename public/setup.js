@@ -2,6 +2,7 @@ import { auth, db } from "./app.js";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { renderHives } from "./hives.js";
+import { onSnapshot } from "firebase/firestore";
 
 export let currentUserData = null;
 export let currentChatFriend = null;
@@ -38,6 +39,17 @@ export const loadUserData = async (userId) => {
   }
 };
 
+export function listenToUserData(userId, onUpdate) {
+  const userDocRef = doc(db, "users", userId);
+  return onSnapshot(userDocRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      currentUserData = data;
+      onUpdate(data);
+    }
+  });
+}
+
 export function setupDropdownMenu() {
   const menuButton = document.getElementById("menu-button");
   const menuDropdown = document.getElementById("menu-dropdown");
@@ -69,9 +81,17 @@ export async function initializePage() {
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      currentUserData = await loadUserData(user.uid);
-      renderHives(currentUserData.hives);
-    } else {
+      listenToUserData(user.uid, (data) => {
+        renderHives(data.hives);
+        // Optional: always render "All" chats too
+        if (data.chats) {
+          import("./chats.js").then(({ renderChats }) => {
+            renderChats("All", data.chats);
+          });
+        }
+      });
+    }
+     else {
       window.location.href = "auth.html";
     }
   });

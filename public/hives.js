@@ -16,11 +16,9 @@ export function renderHives(hives) {
   chatMenu.appendChild(topButtons);
 
   document.getElementById("hive-button").addEventListener("click", () => {
-    const hiveName = prompt("Enter a name for your new hive:");
-    if (hiveName) {
-      createHive(hiveName);
-    }
+    document.getElementById("create-hive-popup").classList.remove("hidden");
   });
+  
 
   document.getElementById("chat-button").addEventListener("click", () => {
     document.dispatchEvent(new CustomEvent("openFriendChatPopup"));
@@ -98,7 +96,42 @@ export function showHiveContextMenu(x, y, hiveName) {
   const deleteBtn = document.getElementById("delete-hive");
 
   renameBtn.onclick = async () => {
-    const newName = prompt("Rename hive:", hiveName);
+    document.getElementById("rename-hive-popup").classList.remove("hidden");
+    document.getElementById("rename-hive-input").value = hiveName;
+
+    document.getElementById("confirm-rename-hive").onclick = async () => {
+      const newName = document.getElementById("rename-hive-input").value.trim();
+      if (!newName || newName === hiveName) return;
+
+      const userId = auth.currentUser.uid;
+      const userRef = doc(db, "users", userId);
+      const snap = await getDoc(userRef);
+      const data = snap.data();
+
+      if (data.hives[newName]) {
+        alert("That hive already exists.");
+        return;
+      }
+
+      data.hives[newName] = data.hives[hiveName];
+      delete data.hives[hiveName];
+
+      for (const chat of Object.values(data.chats)) {
+        if (chat.hives?.includes(hiveName)) {
+          chat.hives = chat.hives.map(h => h === hiveName ? newName : h);
+        }
+      }
+
+      await setDoc(userRef, data);
+      renderHives(data.hives);
+      document.getElementById("rename-hive-popup").classList.add("hidden");
+      document.getElementById("hive-context-menu").classList.add("hidden");
+    };
+
+    document.getElementById("cancel-rename-hive").onclick = () => {
+      document.getElementById("rename-hive-popup").classList.add("hidden");
+    };
+
     if (!newName || newName === hiveName) return;
 
     const userId = auth.currentUser.uid;
@@ -149,3 +182,19 @@ export function showHiveContextMenu(x, y, hiveName) {
     menu.classList.add("hidden");
   };
 }
+
+// Popup controls for creating a hive
+document.getElementById("confirm-create-hive").onclick = async () => {
+  const hiveName = document.getElementById("new-hive-name").value.trim();
+  if (hiveName) {
+    await createHive(hiveName);
+  }
+  document.getElementById("new-hive-name").value = "";
+  document.getElementById("create-hive-popup").classList.add("hidden");
+};
+
+document.getElementById("cancel-create-hive").onclick = () => {
+  document.getElementById("new-hive-name").value = "";
+  document.getElementById("create-hive-popup").classList.add("hidden");
+};
+

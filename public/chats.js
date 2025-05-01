@@ -18,11 +18,9 @@ export function renderChats(hiveName, chats) {
   chatMenu.appendChild(topButtons);
 
   document.getElementById("hive-button").addEventListener("click", () => {
-    const hiveName = prompt("Enter a name for your new hive:");
-    if (hiveName) {
-      document.dispatchEvent(new CustomEvent("createNewHive", { detail: { hiveName } }));
-    }
+    document.getElementById("create-hive-popup").classList.remove("hidden");
   });
+  
 
   document.getElementById("chat-button").addEventListener("click", () => {
     document.dispatchEvent(new CustomEvent("openFriendChatPopup"));
@@ -62,6 +60,21 @@ export function initializeChats() {
       menu.classList.add("hidden");
     }
   });  
+    // Create Hive Popup Logic
+  document.getElementById("confirm-create-hive").onclick = () => {
+    const hiveName = document.getElementById("new-hive-name").value.trim();
+    if (hiveName) {
+      document.dispatchEvent(new CustomEvent("createNewHive", { detail: { hiveName } }));
+    }
+    document.getElementById("new-hive-name").value = "";
+    document.getElementById("create-hive-popup").classList.add("hidden");
+  };
+
+  document.getElementById("cancel-create-hive").onclick = () => {
+    document.getElementById("new-hive-name").value = "";
+    document.getElementById("create-hive-popup").classList.add("hidden");
+  };
+
 }
 
 async function showFriendChatPopup() {
@@ -81,14 +94,19 @@ async function showFriendChatPopup() {
 
   friends.forEach((friendEmail) => {
     const alreadyChatted = chats[friendEmail];
-    const btn = document.createElement("button");
-    btn.textContent = alreadyChatted ? `${friendEmail} (Chat Exists)` : `Chat with ${friendEmail}`;
-    btn.disabled = !!alreadyChatted;
+const btn = document.createElement("button");
+btn.textContent = friendEmail;
 
-    btn.addEventListener("click", () => {
-      openCreateChatHivesPopup(friendEmail);
-      popup.classList.add("hidden");
-    });
+if (alreadyChatted) {
+  btn.classList.add("dimmed-chat-button");
+  btn.disabled = true;
+} else {
+  btn.textContent = `Chat with ${friendEmail}`;
+  btn.addEventListener("click", () => {
+    openCreateChatHivesPopup(friendEmail);
+    popup.classList.add("hidden");
+  });
+}
 
     const li = document.createElement("li");
     li.appendChild(btn);
@@ -156,11 +174,14 @@ function openCreateChatHivesPopup(friendEmail) {
     }
 
     popup.classList.add("hidden");
-    const updated = await import("./setup.js").then(module => module.loadUserData(creatorId));
     import("./setup.js").then(module => {
       module.currentUserData = updated;
       renderHives(updated.hives);
+      renderChats("All", updated.chats);
+
     });
+   
+
   };
 
   popup.classList.remove("hidden");

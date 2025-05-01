@@ -99,7 +99,32 @@
   <script type="module" src="./chats.js"></script>
   <script type="module" src="./messages.js"></script>
   
-  <script type="module" src="./index.js"></script>  
+  <script type="module" src="./index.js"></script> 
+  
+  <!-- Create Hive Popup -->
+<div id="create-hive-popup" class="popup hidden">
+  <div class="popup-content">
+    <h3>Create a New Hive</h3>
+    <input type="text" id="new-hive-name" placeholder="Enter hive name..." />
+    <div class="popup-buttons">
+      <button id="confirm-create-hive">Create</button>
+      <button id="cancel-create-hive">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Hive Popup -->
+<div id="rename-hive-popup" class="popup hidden">
+  <div class="popup-content">
+    <h3>Rename Hive</h3>
+    <input type="text" id="rename-hive-input" placeholder="New hive name..." />
+    <div class="popup-buttons">
+      <button id="confirm-rename-hive">Rename</button>
+      <button id="cancel-rename-hive">Cancel</button>
+    </div>
+  </div>
+</div>
+
 
 </body>
 </html>

@@ -69,17 +69,43 @@ export async function sendMessage() {
 }
 
 export function displayMessage(message) {
-  const messageDiv = document.createElement("div");
-  messageDiv.classList.add("message");
-  messageDiv.textContent = `${message.sender}: ${message.text}`;
-  chatHistory.appendChild(messageDiv);
+  const isCurrentUser = message.sender === auth.currentUser.email;
+
+  const container = document.createElement("div");
+  container.classList.add("chat-bubble");
+  container.classList.add(isCurrentUser ? "sent" : "received");
+
+  const name = document.createElement("div");
+  name.className = "bubble-name";
+  name.textContent = isCurrentUser ? "You" : message.sender;
+
+  const text = document.createElement("div");
+  text.className = "bubble-text";
+  text.textContent = message.text;
+
+  const timestamp = document.createElement("div");
+  timestamp.className = "bubble-timestamp";
+  timestamp.textContent = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  container.appendChild(name);
+  container.appendChild(text);
+  container.appendChild(timestamp);
+  chatHistory.appendChild(container);
 }
+
+
 
 export function openChat(friendEmail) {
 
   // Shrink chat menu
   const chatMenu = document.getElementById("chat-menu");
-  chatMenu.style.width = "20%";
+  
+  if (window.innerWidth > 768) {
+    chatMenu.style.width = "20%";
+  } else { // but not for mobile
+    chatMenu.style.width = "100%";
+  }
+  
 
   // Show the chat container
   const chatContainer = document.getElementById("chat-container");
