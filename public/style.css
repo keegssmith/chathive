@@ -205,10 +205,6 @@ html, body {
 }
 
 
-#menu-button img {
-  width: 160%;
-  height: auto;
-}
 
 #menu-button:hover {
   transform: scale(1.05);
