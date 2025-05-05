@@ -7,6 +7,7 @@ export function renderHives(hives) {
   const chatMenu = document.getElementById("chat-menu");
   chatMenu.innerHTML = "";
 
+  // Top‐level controls
   const topButtons = document.createElement("div");
   topButtons.className = "chat-menu-top-buttons";
   topButtons.innerHTML = `
@@ -18,16 +19,19 @@ export function renderHives(hives) {
   document.getElementById("hive-button").addEventListener("click", () => {
     document.getElementById("create-hive-popup").classList.remove("hidden");
   });
-  
-
   document.getElementById("chat-button").addEventListener("click", () => {
     document.dispatchEvent(new CustomEvent("openFriendChatPopup"));
   });
 
-  const hiveNames = Object.keys(hives).filter(name => name !== "All").sort();
-  hiveNames.unshift("All");
+  // Sort so "All" is first, then the rest alphabetically (case‐insensitive)
+  const hiveNames = Object.keys(hives).sort((a, b) => {
+    if (a === "All") return -1;
+    if (b === "All") return 1;
+    return a.toLowerCase().localeCompare(b.toLowerCase());
+  });
 
-  for (const hiveName of hiveNames) {
+  // Render each hive button
+  hiveNames.forEach((hiveName) => {
     const hiveContainer = document.createElement("div");
     hiveContainer.classList.add("hive-container");
 
@@ -54,19 +58,19 @@ export function renderHives(hives) {
         e.preventDefault();
         showHiveContextMenu(e.pageX, e.pageY, hiveName);
       });
-    }    
+    }
 
     hiveContainer.appendChild(hiveButton);
     chatMenu.appendChild(hiveContainer);
-  }
-
-  document.addEventListener("click", () => {
-    const hiveMenu = document.getElementById("hive-context-menu");
-    if (!hiveMenu.classList.contains("hidden")) {
-      hiveMenu.classList.add("hidden");
-    }
   });
 
+  // Hide any open context‐menu when clicking elsewhere
+  document.addEventListener("click", () => {
+    const menu = document.getElementById("hive-context-menu");
+    if (!menu.classList.contains("hidden")) {
+      menu.classList.add("hidden");
+    }
+  });
 }
 
 export async function createHive(hiveName) {
