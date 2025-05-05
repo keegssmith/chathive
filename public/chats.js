@@ -20,7 +20,6 @@ export function renderChats(hiveName, chats) {
   document.getElementById("hive-button").addEventListener("click", () => {
     document.getElementById("create-hive-popup").classList.remove("hidden");
   });
-  
 
   document.getElementById("chat-button").addEventListener("click", () => {
     document.dispatchEvent(new CustomEvent("openFriendChatPopup"));
@@ -28,6 +27,10 @@ export function renderChats(hiveName, chats) {
 
   document.getElementById("back-button").addEventListener("click", () => {
     renderHives(currentUserData.hives);
+
+    // Restore hive view on mobile
+    document.getElementById("chat-menu").classList.remove("hidden");
+    document.getElementById("chat-container").classList.remove("visible");
   });
 
   for (const friendEmail in chats) {
@@ -38,13 +41,19 @@ export function renderChats(hiveName, chats) {
     chatBtn.textContent = friendEmail;
     chatBtn.className = "chat-entry";
 
-    chatBtn.addEventListener("click", () => openChat(friendEmail));
+    chatBtn.addEventListener("click", () => {
+      openChat(friendEmail);
+
+      // Mobile: hide hive list and show chat container
+      document.getElementById("chat-menu").classList.add("hidden");
+      document.getElementById("chat-container").classList.add("visible");
+    });
 
     chatBtn.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       showChatContextMenu(e.pageX, e.pageY, friendEmail);
     });
-    
+
     chatMenu.appendChild(chatBtn);
   }
 }
@@ -59,8 +68,8 @@ export function initializeChats() {
     if (!menu.classList.contains("hidden")) {
       menu.classList.add("hidden");
     }
-  });  
-    // Create Hive Popup Logic
+  });
+
   document.getElementById("confirm-create-hive").onclick = () => {
     const hiveName = document.getElementById("new-hive-name").value.trim();
     if (hiveName) {
@@ -74,7 +83,6 @@ export function initializeChats() {
     document.getElementById("new-hive-name").value = "";
     document.getElementById("create-hive-popup").classList.add("hidden");
   };
-
 }
 
 async function showFriendChatPopup() {
@@ -94,19 +102,19 @@ async function showFriendChatPopup() {
 
   friends.forEach((friendEmail) => {
     const alreadyChatted = chats[friendEmail];
-const btn = document.createElement("button");
-btn.textContent = friendEmail;
+    const btn = document.createElement("button");
+    btn.textContent = friendEmail;
 
-if (alreadyChatted) {
-  btn.classList.add("dimmed-chat-button");
-  btn.disabled = true;
-} else {
-  btn.textContent = `Chat with ${friendEmail}`;
-  btn.addEventListener("click", () => {
-    openCreateChatHivesPopup(friendEmail);
-    popup.classList.add("hidden");
-  });
-}
+    if (alreadyChatted) {
+      btn.classList.add("dimmed-chat-button");
+      btn.disabled = true;
+    } else {
+      btn.textContent = `Chat with ${friendEmail}`;
+      btn.addEventListener("click", () => {
+        openCreateChatHivesPopup(friendEmail);
+        popup.classList.add("hidden");
+      });
+    }
 
     const li = document.createElement("li");
     li.appendChild(btn);
@@ -174,14 +182,12 @@ function openCreateChatHivesPopup(friendEmail) {
     }
 
     popup.classList.add("hidden");
+
     import("./setup.js").then(module => {
-      module.currentUserData = updated;
-      renderHives(updated.hives);
-      renderChats("All", updated.chats);
-
+      module.currentUserData = creatorData;
+      renderHives(creatorData.hives);
+      renderChats("All", creatorData.chats);
     });
-   
-
   };
 
   popup.classList.remove("hidden");
@@ -230,7 +236,6 @@ function openEditHivesPopup(friendEmail) {
       form.querySelectorAll("input[type='checkbox']:checked")
     ).map(cb => cb.value);
 
-    // "All" is not shown, but always included
     const finalHives = ["All", ...selectedHives];
 
     const userId = auth.currentUser.uid;
@@ -241,7 +246,6 @@ function openEditHivesPopup(friendEmail) {
     userData.chats[friendEmail].hives = finalHives;
     await setDoc(userRef, userData, { merge: true });
 
-    // update local state and UI
     currentUserData.chats[friendEmail].hives = finalHives;
     renderHives(currentUserData.hives);
     popup.classList.add("hidden");
